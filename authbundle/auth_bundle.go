@@ -121,9 +121,9 @@ func (st *RefreshTokenStore) GetByTokenHash(ctx context.Context, tokenHash strin
 		SELECT id, user_id, token_hash, expires_at, revoked_at, created_at, updated_at, deleted_at
 		FROM refresh_tokens
 		WHERE token_hash = $1
-		  AND deleted_at IS NULL
-		  AND revoked_at IS NULL
-		  AND expires_at > NOW()
+			AND deleted_at IS NULL
+			AND revoked_at IS NULL
+			AND expires_at > NOW()
 	`
 	err := st.db.GetContext(ctx, &token, query, tokenHash)
 	if err != nil {
@@ -141,8 +141,8 @@ func (st *RefreshTokenStore) RevokeByTokenHash(ctx context.Context, tokenHash st
 		UPDATE refresh_tokens
 		SET revoked_at = NOW(), updated_at = NOW()
 		WHERE token_hash = $1
-		  AND deleted_at IS NULL
-		  AND revoked_at IS NULL
+			AND deleted_at IS NULL
+			AND revoked_at IS NULL
 	`
 	_, err := st.db.ExecContext(ctx, query, tokenHash)
 	return err
@@ -154,8 +154,8 @@ func (st *RefreshTokenStore) RevokeByUserID(ctx context.Context, userID uuid.UUI
 		UPDATE refresh_tokens
 		SET revoked_at = NOW(), updated_at = NOW()
 		WHERE user_id = $1
-		  AND deleted_at IS NULL
-		  AND revoked_at IS NULL
+			AND deleted_at IS NULL
+			AND revoked_at IS NULL
 	`
 	_, err := st.db.ExecContext(ctx, query, userID)
 	return err
