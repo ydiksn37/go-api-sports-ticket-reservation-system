@@ -2,6 +2,7 @@ package handler
 
 import (
 	"42tokyo-road-to-dena-server/authbundle"
+	"42tokyo-road-to-dena-server/usecase"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -9,13 +10,25 @@ import (
 	"path/filepath"
 )
 
-func New() *Handler {
-	return &Handler{}
+// Deps は Handler が必要とする依存関係をまとめた構造体
+type Deps struct {
+	AuthBundle  *authbundle.AuthBundle
+	AuthConfig  *authbundle.AuthConfig
+	UserUseCase usecase.UserUseCase
 }
 
 type Handler struct {
 	authBundleService *authbundle.AuthBundle
 	authConfig        *authbundle.AuthConfig
+	userUseCase       usecase.UserUseCase
+}
+
+func New(deps Deps) *Handler {
+	return &Handler{
+		authBundleService: deps.AuthBundle,
+		authConfig:        deps.AuthConfig,
+		userUseCase:       deps.UserUseCase,
+	}
 }
 
 func (h *Handler) Routes() http.Handler {
@@ -23,6 +36,9 @@ func (h *Handler) Routes() http.Handler {
 
 	// ルーティング
 	mux.HandleFunc("GET /health", h.HealthCheck)
+
+	// ユーザー登録
+	mux.HandleFunc("POST /api/user/signup", h.Signup)
 
 	// Swagger/OpenAPI 配信
 	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
