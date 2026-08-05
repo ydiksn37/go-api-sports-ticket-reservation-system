@@ -10,5 +10,5 @@ func (h *Handler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 		"status":    "healthy",
 		"timestamp": time.Now().Unix(),
 	}
-	h.respondJSON(w, response, http.StatusOK)
+	h.respondJSON(w, response, http.StatusOK) // 200
 }
