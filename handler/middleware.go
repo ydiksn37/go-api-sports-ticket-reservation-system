@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// AuthRequired はアクセストークンを検証し、context に userID を注入する
+// アクセストークンを検証し、context に userID を注入する
 func (h *Handler) AuthRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := h.extractTokenFromRequest(r)
@@ -33,7 +33,7 @@ func (h *Handler) AuthRequired(next http.Handler) http.Handler {
 	})
 }
 
-// Authorization ヘッダまたは Cookie からトークンを取得する
+// ヘッダまたは Cookie からトークンを取得する
 func (h *Handler) extractTokenFromRequest(r *http.Request) string {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "" {

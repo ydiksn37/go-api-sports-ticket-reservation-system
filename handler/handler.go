@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// Deps は Handler が必要とする依存関係をまとめた構造体
+// Handler が必要とする依存関係をまとめた構造体
 type Deps struct {
 	AuthBundle  *authbundle.AuthBundle
 	AuthConfig  *authbundle.AuthConfig

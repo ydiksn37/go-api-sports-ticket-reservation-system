@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// User はシステムのユーザーエンティティ
+// システムのユーザーエンティティ
 // DB の users テーブルと1対1で対応
 type User struct {
 	ID           uuid.UUID `db:"id"`
@@ -18,7 +18,7 @@ type User struct {
 	UpdatedAt    time.Time `db:"updated_at"`
 }
 
-// UserRepository はユーザーの永続化に関するインターフェース
+// ユーザーの永続化に関するインターフェース
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	FindByEmail(ctx context.Context, email string) (*User, error)

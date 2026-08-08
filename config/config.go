@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config はアプリケーション全体の設定をまとめた構造体
+// アプリケーション全体の設定をまとめた構造体
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
@@ -19,13 +19,13 @@ type ServerConfig struct {
 	Host string
 }
 
-// DatabaseConfig はデータベース接続に関する設定
+// データベース接続に関する設定
 type DatabaseConfig struct {
 	// URL は環境変数から読み込む
 	URL string
 }
 
-// AuthConfig は JWT 認証に関する設定
+// JWT 認証に関する設定
 // authbundle.AuthConfig と同じフィールドを持つ
 // config パッケージを authbundle に依存させないために独立した型として定義
 type AuthConfig struct {

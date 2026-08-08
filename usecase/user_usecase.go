@@ -34,7 +34,7 @@ type SignupInput struct {
 }
 
 // Signup ユースケースからの出力データ
-// トークン生成は Handler 側で行う（authbundle の詳細に深く依存しない設計にするため）
+// トークン生成は Handler 側で行う（authbundle に依存しない）
 type SignupOutput struct {
 	UserID uuid.UUID
 }
@@ -84,8 +84,6 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 		return nil, ErrUsernameAlreadyExists
 	}
 	// パスワードのハッシュ化
-	// authbundle.HashPassword は純粋関数のため、ここから直接呼びだす
-	// bcrypt でハッシュ化されるため、平文パスワードは DB に保存されない
 	hashedPassword, err := authbundle.HashPassword(input.Password)
 	if err != nil {
 		return nil, fmt.Errorf("Signup: hash password: %w", err)
