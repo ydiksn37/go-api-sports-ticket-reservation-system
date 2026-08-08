@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 )
 
 // Deps は Handler が必要とする依存関係をまとめた構造体
@@ -41,18 +39,7 @@ func (h *Handler) Routes() http.Handler {
 	mux.HandleFunc("POST /api/user/signup", h.Signup)
 
 	// Swagger/OpenAPI 配信
-	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		repoRoot, _ := os.Getwd()
-		p := filepath.Join(repoRoot, "docs", "openapi.yaml")
-		w.Header().Set("Content-Type", "application/yaml")
-		http.ServeFile(w, r, p)
-	})
-	mux.HandleFunc("GET /swagger", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join("docs", "swagger", "index.html"))
-	})
-	mux.HandleFunc("GET /swagger/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join("docs", "swagger", "index.html"))
-	})
+	registerDocsRoutes(mux)
 
 	return mux
 }

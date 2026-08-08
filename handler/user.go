@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/authbundle"
 	"42tokyo-road-to-dena-server/usecase"
 	"encoding/json"
 	"errors"
@@ -51,8 +50,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	// トークン生成
 	// authbundle を使ったトークン生成は Handler 層で行う
-	// UseCase はトークンの具体的な実装（JWT等）を知らない
-	// todo: authbundle/auth_bundle.go は将来的な分割が必要
 	accessToken, err := h.authBundleService.GenerateAccessToken(output.UserID)
 	if err != nil {
 		h.respondError(w, errors.New("failed to generate access token"), http.StatusInternalServerError) // 500
@@ -65,10 +62,9 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cookie にトークンをセット
-	authbundle.SetAuthCookies(w, accessToken, refreshToken, h.authConfig)
+	setAuthCookies(w, accessToken, refreshToken, h.authConfig)
 
 	// レスポンスを返す
-	// authbundle.AuthTokensResponse に user_id も含める形で返す
 	h.respondJSON(w, map[string]interface{}{
 		"user_id":       output.UserID,
 		"access_token":  accessToken,
