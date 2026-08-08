@@ -55,6 +55,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthTokensResponse'
+        '400':
+          description: 不正なリクエスト（入力値の不足や不正な形式）
+        '409':
+          description: 競合（ユーザー名またはメールアドレスが既に存在する）
+        '500':
+          description: サーバー内部エラー
   /api/user/login:
     post:
       tags:
@@ -107,7 +113,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponse'
         '401':
-          description: Unauthorized
+          description: Unauthorized（未認証またはトークン無効）
+        '404':
+          description: Not Found（ユーザーが存在しない）
+        '500':
+          description: サーバー内部エラー
   /api/games:
     get:
       tags:
