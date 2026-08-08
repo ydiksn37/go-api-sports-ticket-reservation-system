@@ -44,8 +44,9 @@ func main() {
 		CookieDomain: cfg.Auth.CookieDomain,
 		CookieSecure: cfg.Auth.CookieSecure,
 	}
-	refreshTokenStore := authbundle.NewRefreshTokenStore(db)
-	authBundle := authbundle.NewAuthBundle(authCfg, refreshTokenStore)
+	// repository 層の実装を使用（domain.RefreshTokenRepository インターフェース経由で DI）
+	refreshTokenRepo := repository.NewRefreshTokenRepository(db)
+	authBundle := authbundle.NewAuthBundle(authCfg, refreshTokenRepo)
 
 	// 依存関係の組み立て（Composition Root）
 	// Repository 層
