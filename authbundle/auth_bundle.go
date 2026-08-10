@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"42tokyo-road-to-dena-server/domain"
@@ -335,21 +334,4 @@ func HashPassword(password string) (string, error) {
 func CheckPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
-}
-
-// ============================================================================
-// Swagger/OpenAPI ドキュメント配信
-// ============================================================================
-
-const (
-	SwaggerDir  = "./docs/swagger"
-	OpenAPIPath = "./docs/openapi.yaml"
-)
-
-// Swagger UI と OpenAPI YAML を提供するハンドラを mux に登録
-func RegisterDocsRoutes(mux *http.ServeMux) {
-	mux.Handle("GET /swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir(SwaggerDir))))
-	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, OpenAPIPath)
-	})
 }
