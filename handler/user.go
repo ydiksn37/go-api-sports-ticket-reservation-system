@@ -71,3 +71,32 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		"refresh_token": refreshToken,
 	}, http.StatusCreated) // 201
 }
+
+// GET /api/user/me のハンドラー
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
+	// AuthRequired ミドルウェアが context に注入した userID を取得
+	userID, ok := getUserIDFromContext(r.Context())
+	if !ok {
+		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
+		return
+	}
+
+	// UseCase の呼び出し
+	output, err := h.userUseCase.Me(r.Context(), usecase.MeInput{UserID: userID})
+	if err != nil {
+		switch {
+		case errors.Is(err, usecase.ErrUserNotFound):
+			h.respondError(w, err, http.StatusNotFound) // 404
+		default:
+			h.respondError(w, errors.New("internal server error"), http.StatusInternalServerError) // 500
+		}
+		return
+	}
+
+	// レスポンスを返す
+	h.respondJSON(w, map[string]interface{}{
+		"id":       output.UserID,
+		"username": output.Username,
+		"email":    output.Email,
+	}, http.StatusOK) // 200
+}

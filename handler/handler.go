@@ -38,6 +38,10 @@ func (h *Handler) Routes() http.Handler {
 	// ユーザー登録
 	mux.HandleFunc("POST /api/user/signup", h.Signup)
 
+	// 認証が必要なエンドポイント（AuthRequired ミドルウェアを適用）
+	// AuthRequired が http.Handler を返すため Handle を使用
+	mux.Handle("GET /api/user/me", h.AuthRequired(http.HandlerFunc(h.Me)))
+
 	// Swagger/OpenAPI 配信
 	registerDocsRoutes(mux)
 

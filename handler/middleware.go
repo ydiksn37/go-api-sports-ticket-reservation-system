@@ -13,18 +13,18 @@ func (h *Handler) AuthRequired(next http.Handler) http.Handler {
 		token := h.extractTokenFromRequest(r)
 
 		if token == "" {
-			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized)
+			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized) // 401
 			return
 		}
 
 		if h.authBundleService == nil {
-			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized)
+			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized) // 401
 			return
 		}
 
 		claims, err := h.authBundleService.ValidateAccessToken(token)
 		if err != nil {
-			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized)
+			h.respondError(w, authbundle.ErrUnauthorized, http.StatusUnauthorized) // 401
 			return
 		}
 
