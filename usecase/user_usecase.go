@@ -20,6 +20,8 @@ var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	// ユーザー名が既に登録されている場合のエラー
 	ErrUsernameAlreadyExists = errors.New("username already exists")
+	// ユーザーが見つからない場合のエラー
+	ErrUserNotFound = errors.New("user not found")
 )
 
 // ============================================================
@@ -39,6 +41,18 @@ type SignupOutput struct {
 	UserID uuid.UUID
 }
 
+// Me ユースケースへの入力データ
+type MeInput struct {
+	UserID uuid.UUID
+}
+
+// Me ユースケースからの出力データ
+type MeOutput struct {
+	UserID   uuid.UUID
+	Username string
+	Email    string
+}
+
 // ============================================================
 // インターフェース定義
 // Handler はこのインターフェースに依存
@@ -47,6 +61,7 @@ type SignupOutput struct {
 // ユーザーに関するビジネスロジックのインターフェース
 type UserUseCase interface {
 	Signup(ctx context.Context, input SignupInput) (*SignupOutput, error)
+	Me(ctx context.Context, input MeInput) (*MeOutput, error)
 }
 
 // ============================================================
@@ -103,6 +118,23 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 		return nil, fmt.Errorf("Signup: create user: %w", err)
 	}
 	return &SignupOutput{UserID: user.ID}, nil
+}
+
+// 認証済みユーザーの情報取得ビジネスロジック
+func (u *userUseCase) Me(ctx context.Context, input MeInput) (*MeOutput, error) {
+	user, err := u.userRepo.FindByID(ctx, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("Me: find user: %w", err)
+	}
+	if user == nil {
+		// ログイン認証済みなのに見つからないケース（アカウント削除等）
+		return nil, ErrUserNotFound
+	}
+	return &MeOutput{
+		UserID:   user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+	}, nil
 }
 
 // コンパイル時に UserUseCase インターフェースを満たしているか検証
