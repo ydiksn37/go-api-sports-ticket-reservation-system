@@ -123,6 +123,9 @@ paths:
       tags:
         - Games
       summary: 試合一覧取得
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
       responses:
         '200':
           description: OK
@@ -132,11 +135,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/GameResponse'
+        '401':
+          description: Unauthorized
   /api/games/{id}:
     get:
       tags:
         - Games
       summary: 試合詳細取得
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -150,6 +158,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GameResponse'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
   /api/games/{id}/seats:
@@ -157,6 +167,9 @@ paths:
       tags:
         - Games
       summary: 試合の座席空き状況取得
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -172,6 +185,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SeatAvailabilityResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
   /api/reservations:
     post:
       tags:
