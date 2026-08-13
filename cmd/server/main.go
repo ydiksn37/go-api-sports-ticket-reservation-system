@@ -51,13 +51,16 @@ func main() {
 	// 依存関係の組み立て（Composition Root）
 	// Repository 層
 	userRepo := repository.NewUserRepository(db)
+	gameRepo := repository.NewGameRepository(db)
 	// UseCase 層
 	userUseCase := usecase.NewUserUseCase(userRepo)
+	gameUseCase := usecase.NewGameUseCase(gameRepo)
 	// Handler 層
 	h := handler.New(handler.Deps{
 		AuthBundle:  authBundle,
 		AuthConfig:  authCfg,
 		UserUseCase: userUseCase,
+		GameUseCase: gameUseCase,
 	})
 
 	// HTTPサーバーの設定
