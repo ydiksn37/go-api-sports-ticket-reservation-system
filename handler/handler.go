@@ -13,12 +13,14 @@ type Deps struct {
 	AuthBundle  *authbundle.AuthBundle
 	AuthConfig  *authbundle.AuthConfig
 	UserUseCase usecase.UserUseCase
+	GameUseCase usecase.GameUseCase
 }
 
 type Handler struct {
 	authBundleService *authbundle.AuthBundle
 	authConfig        *authbundle.AuthConfig
 	userUseCase       usecase.UserUseCase
+	gameUseCase       usecase.GameUseCase
 }
 
 func New(deps Deps) *Handler {
@@ -26,6 +28,7 @@ func New(deps Deps) *Handler {
 		authBundleService: deps.AuthBundle,
 		authConfig:        deps.AuthConfig,
 		userUseCase:       deps.UserUseCase,
+		gameUseCase:       deps.GameUseCase,
 	}
 }
 
@@ -41,6 +44,10 @@ func (h *Handler) Routes() http.Handler {
 	// 認証が必要なエンドポイント（AuthRequired ミドルウェアを適用）
 	// AuthRequired が http.Handler を返すため Handle を使用
 	mux.Handle("GET /api/user/me", h.AuthRequired(http.HandlerFunc(h.Me)))
+
+	// 試合情報取得
+	mux.HandleFunc("GET /api/games", h.ListGames)
+	mux.HandleFunc("GET /api/games/{id}", h.GetGame)
 
 	// Swagger/OpenAPI 配信
 	registerDocsRoutes(mux)
