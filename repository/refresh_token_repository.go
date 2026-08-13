@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,32 @@ type refreshTokenRepository struct {
 // domain.RefreshTokenRepository の PostgreSQL 実装を返す
 func NewRefreshTokenRepository(db *sqlx.DB) domain.RefreshTokenRepository {
 	return &refreshTokenRepository{db: db}
+}
+
+// DB から取得したデータをマッピングするための構造体
+type refreshTokenRow struct {
+	ID        uuid.UUID  `db:"id"`
+	UserID    uuid.UUID  `db:"user_id"`
+	TokenHash string     `db:"token_hash"`
+	ExpiresAt time.Time  `db:"expires_at"`
+	RevokedAt *time.Time `db:"revoked_at"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt time.Time  `db:"updated_at"`
+	DeletedAt *time.Time `db:"deleted_at"`
+}
+
+// DB の Row データを domain エンティティに変換する
+func toRefreshTokenDomain(row refreshTokenRow) *domain.RefreshToken {
+	return &domain.RefreshToken{
+		ID:        row.ID,
+		UserID:    row.UserID,
+		TokenHash: row.TokenHash,
+		ExpiresAt: row.ExpiresAt,
+		RevokedAt: row.RevokedAt,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
+		DeletedAt: row.DeletedAt,
+	}
 }
 
 // リフレッシュトークンを DB に保存
@@ -42,7 +69,7 @@ func (r *refreshTokenRepository) Create(ctx context.Context, token *domain.Refre
 
 // ハッシュ値でリフレッシュトークンを取得
 func (r *refreshTokenRepository) GetByTokenHash(ctx context.Context, tokenHash string) (*domain.RefreshToken, error) {
-	var token domain.RefreshToken
+	var row refreshTokenRow
 	query := `
 		SELECT id, user_id, token_hash, expires_at, revoked_at, created_at, updated_at, deleted_at
 		FROM refresh_tokens
@@ -51,14 +78,14 @@ func (r *refreshTokenRepository) GetByTokenHash(ctx context.Context, tokenHash s
 			AND revoked_at IS NULL
 			AND expires_at > NOW()
 	`
-	err := r.db.GetContext(ctx, &token, query, tokenHash)
+	err := r.db.GetContext(ctx, &row, query, tokenHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("refreshTokenRepository.GetByTokenHash: %w", err)
 	}
-	return &token, nil
+	return toRefreshTokenDomain(row), nil
 }
 
 // ハッシュ値でリフレッシュトークンを失効させる

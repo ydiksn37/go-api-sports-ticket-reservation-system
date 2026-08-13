@@ -10,12 +10,12 @@ import (
 // システムのユーザーエンティティ
 // DB の users テーブルと1対1で対応
 type User struct {
-	ID           uuid.UUID `db:"id"`
-	Username     string    `db:"username"`
-	Email        string    `db:"email"`
-	PasswordHash string    `db:"password_hash"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
+	ID           uuid.UUID
+	Username     string
+	Email        string
+	PasswordHash string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // ユーザーの永続化に関するインターフェース
