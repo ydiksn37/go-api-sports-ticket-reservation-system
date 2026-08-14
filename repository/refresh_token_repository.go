@@ -104,7 +104,7 @@ func (r *refreshTokenRepository) RevokeByTokenHash(ctx context.Context, tokenHas
 	return nil
 }
 
-// ユーザーIDに紐づく全リフレッシュトークンを失効させる
+// ユーザー ID に紐づく全リフレッシュトークンを失効させる
 func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID uuid.UUID) error {
 	query := `
 		UPDATE refresh_tokens

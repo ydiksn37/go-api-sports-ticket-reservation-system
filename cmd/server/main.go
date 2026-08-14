@@ -63,7 +63,7 @@ func main() {
 		GameUseCase: gameUseCase,
 	})
 
-	// HTTPサーバーの設定
+	// HTTP サーバーの設定
 	srv := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port),
 		Handler:      h.Routes(),

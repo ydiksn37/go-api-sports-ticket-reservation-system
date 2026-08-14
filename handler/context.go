@@ -9,10 +9,10 @@ import (
 // コンテキストで使用するキーの型
 type contextKey string
 
-// コンテキストにユーザーIDを格納するキー
+// コンテキストにユーザー ID を格納するキー
 const userIDKey contextKey = "userID"
 
-// コンテキストからユーザーIDを取得する
+// コンテキストからユーザー ID を取得する
 func getUserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
 	userID, ok := ctx.Value(userIDKey).(uuid.UUID)
 	return userID, ok

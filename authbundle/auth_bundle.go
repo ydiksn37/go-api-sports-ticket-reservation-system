@@ -127,7 +127,7 @@ func (st *RefreshTokenStore) RevokeByTokenHash(ctx context.Context, tokenHash st
 	return err
 }
 
-// ユーザーIDに紐づく全リフレッシュトークンを失効させる
+// ユーザー ID に紐づく全リフレッシュトークンを失効させる
 func (st *RefreshTokenStore) RevokeByUserID(ctx context.Context, userID uuid.UUID) error {
 	query := `
 		UPDATE refresh_tokens
@@ -149,7 +149,7 @@ var _ domain.RefreshTokenRepository = (*RefreshTokenStore)(nil)
 
 type AuthBundle struct {
 	cfg               *AuthConfig
-	refreshTokenStore domain.RefreshTokenRepository // インターフェースに依存（DIP適用）
+	refreshTokenStore domain.RefreshTokenRepository // インターフェースに依存（DIP 適用）
 }
 
 // AuthBundle のコンストラクタ

@@ -100,7 +100,7 @@ func (r *userRepository) FindByUsername(ctx context.Context, username string) (*
 	return toUserDomain(row), nil
 }
 
-// IDでユーザーを検索
+// ID でユーザーを検索
 func (r *userRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	var row userRow
 	query := `
