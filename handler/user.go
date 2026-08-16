@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 // docs/openapi.yaml 仕様の SignupRequest スキーマと対応
@@ -12,6 +14,34 @@ type SignupRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type SignupResponse struct {
+	UserID       uuid.UUID `json:"user_id"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+}
+
+func toSignupResponse(output *usecase.SignupOutput, accessToken, refreshToken string) SignupResponse {
+	return SignupResponse{
+		UserID:       output.UserID,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+}
+
+type MeResponse struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+}
+
+func toMeResponse(output *usecase.MeOutput) MeResponse {
+	return MeResponse{
+		ID:       output.UserID,
+		Username: output.Username,
+		Email:    output.Email,
+	}
 }
 
 // POST /api/user/signup のハンドラー
@@ -65,11 +95,7 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	setAuthCookies(w, accessToken, refreshToken, h.authConfig)
 
 	// レスポンスを返す
-	h.respondJSON(w, map[string]interface{}{
-		"user_id":       output.UserID,
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	}, http.StatusCreated) // 201
+	h.respondJSON(w, toSignupResponse(output, accessToken, refreshToken), http.StatusCreated) // 201
 }
 
 // GET /api/user/me のハンドラー
@@ -94,9 +120,5 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// レスポンスを返す
-	h.respondJSON(w, map[string]interface{}{
-		"id":       output.UserID,
-		"username": output.Username,
-		"email":    output.Email,
-	}, http.StatusOK) // 200
+	h.respondJSON(w, toMeResponse(output), http.StatusOK) // 200
 }
