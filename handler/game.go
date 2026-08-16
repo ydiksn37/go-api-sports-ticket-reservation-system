@@ -26,7 +26,7 @@ type gameResponse struct {
 	AwayTeam  teamResponse `json:"away_team"`
 }
 
-// domain.Game をレスポンス用 DTO に変換するヘルパー
+// レスポンス用 DTO に変換するヘルパー
 func toGameResponse(g *domain.Game) gameResponse {
 	return gameResponse{
 		ID:        g.ID,

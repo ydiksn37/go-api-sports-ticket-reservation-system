@@ -22,6 +22,7 @@ type SignupResponse struct {
 	RefreshToken string    `json:"refresh_token"`
 }
 
+// レスポンス用 DTO に変換するヘルパー
 func toSignupResponse(output *usecase.SignupOutput, accessToken, refreshToken string) SignupResponse {
 	return SignupResponse{
 		UserID:       output.UserID,
@@ -36,6 +37,7 @@ type MeResponse struct {
 	Email    string    `json:"email"`
 }
 
+// レスポンス用 DTO に変換するヘルパー
 func toMeResponse(output *usecase.MeOutput) MeResponse {
 	return MeResponse{
 		ID:       output.UserID,
