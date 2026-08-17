@@ -12,7 +12,6 @@ import (
 
 // レスポンス用 DTO
 // docs/openapi.yaml の TeamResponse / GameResponse スキーマに対応
-
 type teamResponse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`

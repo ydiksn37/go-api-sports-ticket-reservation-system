@@ -30,7 +30,7 @@ func (r *RefreshToken) IsRevoked() bool {
 	return r.RevokedAt != nil
 }
 
-// リフレッシュトークンの永続化に関するインターフェース
+// リフレッシュトークンの DB 操作に関するインターフェース
 type RefreshTokenRepository interface {
 	Create(ctx context.Context, token *RefreshToken) error
 	GetByTokenHash(ctx context.Context, tokenHash string) (*RefreshToken, error)

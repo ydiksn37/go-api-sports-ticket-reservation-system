@@ -18,7 +18,7 @@ type User struct {
 	UpdatedAt    time.Time
 }
 
-// ユーザーの永続化に関するインターフェース
+// ユーザーの DB 操作に関するインターフェース
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	FindByEmail(ctx context.Context, email string) (*User, error)

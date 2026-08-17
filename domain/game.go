@@ -26,7 +26,7 @@ type Game struct {
 	AwayTeam   Team
 }
 
-// 試合情報の永続化に関するインターフェース
+// 試合情報の DB 操作に関するインターフェース
 type GameRepository interface {
 	// 全試合を試合日昇順で取得する（ホーム/アウェイチーム情報を含む）
 	FindAll(ctx context.Context) ([]*Game, error)
