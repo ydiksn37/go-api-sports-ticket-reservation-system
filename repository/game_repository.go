@@ -21,12 +21,8 @@ func NewGameRepository(db *sqlx.DB) domain.GameRepository {
 	return &gameRepository{db: db}
 }
 
-// ============================================================
-// フラット中間構造体
-// sqlx はネストした構造体への直接マッピングが困難なため、
-// JOIN クエリの結果をフラットに受け取り、アプリ層で組み立てる
-// ============================================================
-
+// 中間構造体
+// sqlx は自動マッピングができないため
 type gameRow struct {
 	ID           uuid.UUID `db:"id"`
 	HomeTeamID   uuid.UUID `db:"home_team_id"`
@@ -57,11 +53,11 @@ func toGameDomain(row gameRow) *domain.Game {
 }
 
 // ============================================================
-// クエリ定数
+// Query定数
 // ============================================================
 
 // games と teams を 2回 JOIN してホーム/アウェイチーム名を一括取得
-// n+1 問題を防ぐため、単一クエリでチーム情報まで取得する
+// n + 1 問題を防ぐため、単一 Query でチーム情報まで取得する
 const findAllGamesQuery = `
 	SELECT
 		g.id,
@@ -92,11 +88,7 @@ const findGameByIDQuery = `
 	WHERE g.id = $1
 `
 
-// ============================================================
-// リポジトリメソッド実装
-// ============================================================
-
-// FindAll は全試合を試合日昇順で取得する
+// 全試合を試合日昇順で取得する
 func (r *gameRepository) FindAll(ctx context.Context) ([]*domain.Game, error) {
 	var rows []gameRow
 	if err := r.db.SelectContext(ctx, &rows, findAllGamesQuery); err != nil {
@@ -109,7 +101,7 @@ func (r *gameRepository) FindAll(ctx context.Context) ([]*domain.Game, error) {
 	return games, nil
 }
 
-// FindByID は指定 ID の試合を取得する。存在しない場合は nil, nil を返す
+// 指定 ID の試合を取得する。存在しない場合は nil, nil を返す
 func (r *gameRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Game, error) {
 	var row gameRow
 	if err := r.db.GetContext(ctx, &row, findGameByIDQuery, id); err != nil {
