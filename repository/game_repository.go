@@ -56,7 +56,7 @@ func toGameDomain(row gameRow) *domain.Game {
 // Query定数
 // ============================================================
 
-// games と teams を 2回 JOIN してホーム/アウェイチーム名を一括取得
+// teams テーブルを 2回 JOIN して games テーブルに必要なホーム/アウェイチーム名を一括取得
 // n + 1 問題を防ぐため、単一 Query でチーム情報まで取得する
 const findAllGamesQuery = `
 	SELECT
