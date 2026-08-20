@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"42tokyo-road-to-dena-server/authbundle"
 	"42tokyo-road-to-dena-server/domain"
 	"context"
 	"errors"
@@ -68,14 +67,15 @@ type UserUseCase interface {
 // UseCase ロジック
 // ============================================================
 
-// DIP のため domain.UserRepository インターフェースに依存
+// DIP のため domain.UserRepository / domain.PasswordHasher インターフェースに依存
 type userUseCase struct {
 	userRepo domain.UserRepository
+	hasher   domain.PasswordHasher
 }
 
 // コンストラクタ
-func NewUserUseCase(userRepo domain.UserRepository) UserUseCase {
-	return &userUseCase{userRepo: userRepo}
+func NewUserUseCase(userRepo domain.UserRepository, hasher domain.PasswordHasher) UserUseCase {
+	return &userUseCase{userRepo: userRepo, hasher: hasher}
 }
 
 // ユーザー登録のビジネスロジック
@@ -99,7 +99,7 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 		return nil, ErrUsernameAlreadyExists
 	}
 	// パスワードのハッシュ化
-	hashedPassword, err := authbundle.HashPassword(input.Password)
+	hashedPassword, err := u.hasher.HashPassword(input.Password)
 	if err != nil {
 		return nil, fmt.Errorf("Signup: hash password: %w", err)
 	}

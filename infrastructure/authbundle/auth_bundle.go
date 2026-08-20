@@ -335,3 +335,27 @@ func CheckPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
+
+// ============================================================================
+// PasswordHasherImpl - domain.PasswordHasher インターフェースの実装
+// usecase 層は domain.PasswordHasher インターフェース越しに DI される
+// ============================================================================
+
+// domain.PasswordHasher の infrastructure/authbundle 実装
+type PasswordHasherImpl struct{}
+
+// PasswordHasherImpl のコンストラクタ
+func NewPasswordHasher() *PasswordHasherImpl {
+	return &PasswordHasherImpl{}
+}
+
+func (p *PasswordHasherImpl) HashPassword(password string) (string, error) {
+	return HashPassword(password)
+}
+
+func (p *PasswordHasherImpl) CheckPassword(password, hash string) bool {
+	return CheckPassword(password, hash)
+}
+
+// コンパイル時に domain.PasswordHasher インターフェースを満たすか検証
+var _ domain.PasswordHasher = (*PasswordHasherImpl)(nil)
