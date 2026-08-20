@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/authbundle"
+	"42tokyo-road-to-dena-server/infrastructure/authbundle"
 	"context"
 	"net/http"
 	"strings"
