@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	"database/sql"
+	// "database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -14,7 +14,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	// "github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -62,8 +62,9 @@ type AuthConfig struct {
 	CookieSecure bool
 }
 
+/*
 // ============================================================================
-// RefreshTokenStore - authbundle 提供の DB アクセス実装
+// RefreshTokenStore - authbundle 提供の DB アクセス実装（現在はリポジトリ層の実装を使用しているため未使用）
 // domain.RefreshTokenRepository インターフェースを満たす
 // ============================================================================
 
@@ -142,6 +143,7 @@ func (st *RefreshTokenStore) RevokeByUserID(ctx context.Context, userID uuid.UUI
 
 // コンパイル時に domain.RefreshTokenRepository インターフェースを満たしているか検証
 var _ domain.RefreshTokenRepository = (*RefreshTokenStore)(nil)
+*/
 
 // ============================================================================
 // AuthBundle - 認証サービスの統括構造体

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"42tokyo-road-to-dena-server/authbundle"
 	"42tokyo-road-to-dena-server/config"
 	"42tokyo-road-to-dena-server/handler"
+	"42tokyo-road-to-dena-server/infrastructure/authbundle"
 	"42tokyo-road-to-dena-server/repository"
 	"42tokyo-road-to-dena-server/usecase"
 	"context"
@@ -34,6 +34,8 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database")
 
+	// 依存関係の組み立て（Composition Root）
+	// Infrastructure 層
 	// authbundle の設定
 	authCfg := &authbundle.AuthConfig{
 		JWTSecret:    cfg.Auth.JWTSecret,
@@ -44,23 +46,25 @@ func main() {
 		CookieDomain: cfg.Auth.CookieDomain,
 		CookieSecure: cfg.Auth.CookieSecure,
 	}
-	// repository 層の実装を使用（domain.RefreshTokenRepository インターフェース経由で DI）
+	// Repository 層の実装を使用（domain.RefreshTokenRepository インターフェース経由で DI）
 	refreshTokenRepo := repository.NewRefreshTokenRepository(db)
 	authBundle := authbundle.NewAuthBundle(authCfg, refreshTokenRepo)
-
-	// 依存関係の組み立て（Composition Root）
+	passwordHasher := authbundle.NewPasswordHasher()
 	// Repository 層
 	userRepo := repository.NewUserRepository(db)
 	gameRepo := repository.NewGameRepository(db)
+	seatRepo := repository.NewSeatRepository(db)
 	// UseCase 層
-	userUseCase := usecase.NewUserUseCase(userRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo, passwordHasher)
 	gameUseCase := usecase.NewGameUseCase(gameRepo)
+	seatUseCase := usecase.NewSeatUseCase(seatRepo, gameRepo)
 	// Handler 層
 	h := handler.New(handler.Deps{
 		AuthBundle:  authBundle,
 		AuthConfig:  authCfg,
 		UserUseCase: userUseCase,
 		GameUseCase: gameUseCase,
+		SeatUseCase: seatUseCase,
 	})
 
 	// HTTP サーバーの設定
