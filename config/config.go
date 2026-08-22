@@ -44,7 +44,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{
 			Port: getEnv("SERVER_PORT", "8080"),
-			Host: getEnv("SERVER_HOST", "0.0.0.0"),
+			Host: getEnv("SERVER_HOST", ""), // 空文字にすることで IPv4/IPv6 両方を Listen する
 		},
 		Database: DatabaseConfig{
 			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:55432/road_to_dena?sslmode=disable"),
