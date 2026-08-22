@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/authbundle"
+	"42tokyo-road-to-dena-server/infrastructure/authbundle"
 	"42tokyo-road-to-dena-server/usecase"
 	"encoding/json"
 	"log"
@@ -14,6 +14,7 @@ type Deps struct {
 	AuthConfig  *authbundle.AuthConfig
 	UserUseCase usecase.UserUseCase
 	GameUseCase usecase.GameUseCase
+	SeatUseCase usecase.SeatUseCase
 }
 
 type Handler struct {
@@ -21,6 +22,7 @@ type Handler struct {
 	authConfig        *authbundle.AuthConfig
 	userUseCase       usecase.UserUseCase
 	gameUseCase       usecase.GameUseCase
+	seatUseCase       usecase.SeatUseCase
 }
 
 func New(deps Deps) *Handler {
@@ -29,6 +31,7 @@ func New(deps Deps) *Handler {
 		authConfig:        deps.AuthConfig,
 		userUseCase:       deps.UserUseCase,
 		gameUseCase:       deps.GameUseCase,
+		seatUseCase:       deps.SeatUseCase,
 	}
 }
 
@@ -48,6 +51,9 @@ func (h *Handler) Routes() http.Handler {
 	// 試合情報取得
 	mux.HandleFunc("GET /api/games", h.ListGames)
 	mux.HandleFunc("GET /api/games/{id}", h.GetGame)
+
+	// 座席空き状況取得
+	mux.HandleFunc("GET /api/games/{id}/seats", h.ListSeatAvailability)
 
 	// Swagger/OpenAPI 配信
 	registerDocsRoutes(mux)

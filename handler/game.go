@@ -79,3 +79,58 @@ func (h *Handler) GetGame(w http.ResponseWriter, r *http.Request) {
 	// レスポンスを返す
 	h.respondJSON(w, toGameResponse(output.Game), http.StatusOK) // 200
 }
+
+// レスポンス用 DTO
+// docs/openapi.yaml の SeatAvailabilityResponse スキーマに対応
+type seatAvailabilityResponse struct {
+	SeatGrade      string `json:"seat_grade"`
+	Price          int    `json:"price"`
+	TotalSeats     int    `json:"total_seats"`
+	AvailableSeats int    `json:"available_seats"`
+	ReservedSeats  int    `json:"reserved_seats"`
+	SoldSeats      int    `json:"sold_seats"`
+}
+
+// レスポンス用 DTO に変換するヘルパー
+func toSeatAvailabilityResponse(s *domain.SeatAvailability) seatAvailabilityResponse {
+	return seatAvailabilityResponse{
+		SeatGrade:      s.SeatGrade,
+		Price:          s.Price,
+		TotalSeats:     s.TotalSeats,
+		AvailableSeats: s.AvailableSeats,
+		ReservedSeats:  s.ReservedSeats,
+		SoldSeats:      s.SoldSeats,
+	}
+}
+
+// GET /api/games/{id}/seats のハンドラー
+func (h *Handler) ListSeatAvailability(w http.ResponseWriter, r *http.Request) {
+	// パスパラメータの取得・バリデーション
+	idStr := r.PathValue("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.respondError(w, errors.New("invalid game id"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// UseCase の呼び出し
+	output, err := h.seatUseCase.ListSeatAvailability(r.Context(), usecase.ListSeatAvailabilityInput{GameID: id})
+	if err != nil {
+		switch {
+		case errors.Is(err, usecase.ErrGameNotFound):
+			h.respondError(w, err, http.StatusNotFound) // 404
+		default:
+			h.respondError(w, errors.New("internal server error"), http.StatusInternalServerError) // 500
+		}
+		return
+	}
+
+	// 空一覧でも null ではなく [] を返す
+	resp := make([]seatAvailabilityResponse, 0, len(output.Seats))
+	for _, s := range output.Seats {
+		resp = append(resp, toSeatAvailabilityResponse(s))
+	}
+
+	// レスポンスを返す
+	h.respondJSON(w, resp, http.StatusOK) // 200
+}
