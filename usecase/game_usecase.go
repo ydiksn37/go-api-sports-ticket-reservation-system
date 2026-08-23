@@ -14,7 +14,7 @@ import (
 // ============================================================
 
 var (
-	// ErrGameNotFound は指定 ID の試合が存在しない場合のエラー
+	// 指定 ID の試合が存在しない場合のエラー
 	ErrGameNotFound = errors.New("game not found")
 )
 
@@ -22,17 +22,17 @@ var (
 // DTO 定義
 // ============================================================
 
-// ListGamesOutput は試合一覧取得の出力データ
+// 試合一覧取得の出力データ
 type ListGamesOutput struct {
 	Games []*domain.Game
 }
 
-// GetGameInput は試合詳細取得の入力データ
+// 試合詳細取得の入力データ
 type GetGameInput struct {
 	GameID uuid.UUID
 }
 
-// GetGameOutput は試合詳細取得の出力データ
+// 試合詳細取得の出力データ
 type GetGameOutput struct {
 	Game *domain.Game
 }
@@ -42,11 +42,11 @@ type GetGameOutput struct {
 // Handler はこのインターフェースに依存
 // ============================================================
 
-// GameUseCase は試合情報に関するビジネスロジックのインターフェース
+// 試合情報に関するビジネスロジックのインターフェース
 type GameUseCase interface {
-	// ListGames は全試合を一覧取得する
+	// 全試合を一覧取得する
 	ListGames(ctx context.Context) (*ListGamesOutput, error)
-	// GetGame は指定 ID の試合を取得する
+	// 指定 ID の試合を取得する
 	GetGame(ctx context.Context, input GetGameInput) (*GetGameOutput, error)
 }
 
@@ -59,7 +59,7 @@ type gameUseCase struct {
 	gameRepo domain.GameRepository
 }
 
-// NewGameUseCase は GameUseCase のコンストラクタ
+// コンストラクタ
 func NewGameUseCase(gameRepo domain.GameRepository) GameUseCase {
 	return &gameUseCase{gameRepo: gameRepo}
 }

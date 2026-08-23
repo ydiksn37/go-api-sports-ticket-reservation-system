@@ -53,7 +53,7 @@ func toGameDomain(row gameRow) *domain.Game {
 }
 
 // ============================================================
-// Query定数
+// Query 定数
 // ============================================================
 
 // teams テーブルを 2回 JOIN して games テーブルに必要なホーム/アウェイチーム名を一括取得
@@ -101,7 +101,8 @@ func (r *gameRepository) FindAll(ctx context.Context) ([]*domain.Game, error) {
 	return games, nil
 }
 
-// 指定 ID の試合を取得する。存在しない場合は nil, nil を返す
+// 指定 ID の試合を取得する
+// 存在しない場合は nil, nil を返す
 func (r *gameRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Game, error) {
 	var row gameRow
 	if err := r.db.GetContext(ctx, &row, findGameByIDQuery, id); err != nil {
