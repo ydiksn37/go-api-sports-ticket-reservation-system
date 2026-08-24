@@ -54,17 +54,22 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	gameRepo := repository.NewGameRepository(db)
 	seatRepo := repository.NewSeatRepository(db)
+	reservationRepo := repository.NewReservationRepository(db)
+	ticketRepo := repository.NewTicketRepository(db)
+	txManager := repository.NewTxManager(db)
 	// UseCase 層
 	userUseCase := usecase.NewUserUseCase(userRepo, passwordHasher)
 	gameUseCase := usecase.NewGameUseCase(gameRepo)
 	seatUseCase := usecase.NewSeatUseCase(seatRepo, gameRepo)
+	reservationUseCase := usecase.NewReservationUseCase(reservationRepo, ticketRepo, gameRepo, txManager)
 	// Handler 層
 	h := handler.New(handler.Deps{
-		AuthBundle:  authBundle,
-		AuthConfig:  authCfg,
-		UserUseCase: userUseCase,
-		GameUseCase: gameUseCase,
-		SeatUseCase: seatUseCase,
+		AuthBundle:         authBundle,
+		AuthConfig:         authCfg,
+		UserUseCase:        userUseCase,
+		GameUseCase:        gameUseCase,
+		SeatUseCase:        seatUseCase,
+		ReservationUseCase: reservationUseCase,
 	})
 
 	// HTTP サーバーの設定

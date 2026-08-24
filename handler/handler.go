@@ -10,28 +10,31 @@ import (
 
 // Handler が必要とする依存関係をまとめた構造体
 type Deps struct {
-	AuthBundle  *authbundle.AuthBundle
-	AuthConfig  *authbundle.AuthConfig
-	UserUseCase usecase.UserUseCase
-	GameUseCase usecase.GameUseCase
-	SeatUseCase usecase.SeatUseCase
+	AuthBundle         *authbundle.AuthBundle
+	AuthConfig         *authbundle.AuthConfig
+	UserUseCase        usecase.UserUseCase
+	GameUseCase        usecase.GameUseCase
+	SeatUseCase        usecase.SeatUseCase
+	ReservationUseCase usecase.ReservationUseCase
 }
 
 type Handler struct {
-	authBundleService *authbundle.AuthBundle
-	authConfig        *authbundle.AuthConfig
-	userUseCase       usecase.UserUseCase
-	gameUseCase       usecase.GameUseCase
-	seatUseCase       usecase.SeatUseCase
+	authBundleService  *authbundle.AuthBundle
+	authConfig         *authbundle.AuthConfig
+	userUseCase        usecase.UserUseCase
+	gameUseCase        usecase.GameUseCase
+	seatUseCase        usecase.SeatUseCase
+	reservationUseCase usecase.ReservationUseCase
 }
 
 func New(deps Deps) *Handler {
 	return &Handler{
-		authBundleService: deps.AuthBundle,
-		authConfig:        deps.AuthConfig,
-		userUseCase:       deps.UserUseCase,
-		gameUseCase:       deps.GameUseCase,
-		seatUseCase:       deps.SeatUseCase,
+		authBundleService:  deps.AuthBundle,
+		authConfig:         deps.AuthConfig,
+		userUseCase:        deps.UserUseCase,
+		gameUseCase:        deps.GameUseCase,
+		seatUseCase:        deps.SeatUseCase,
+		reservationUseCase: deps.ReservationUseCase,
 	}
 }
 
@@ -54,6 +57,9 @@ func (h *Handler) Routes() http.Handler {
 
 	// 座席空き状況取得
 	mux.HandleFunc("GET /api/games/{id}/seats", h.ListSeatAvailability)
+
+	// 予約管理（認証必須）
+	mux.Handle("POST /api/reservations", h.AuthRequired(http.HandlerFunc(h.CreateReservation)))
 
 	// Swagger/OpenAPI 配信
 	registerDocsRoutes(mux)
