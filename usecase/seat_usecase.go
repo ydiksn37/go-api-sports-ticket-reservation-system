@@ -37,19 +37,25 @@ type SeatUseCase interface {
 // UseCase ロジック
 // ============================================================
 
-// DIP のため domain.SeatRepository / domain.GameRepository インターフェースに依存
+// DIP のため domain.SeatRepository / domain.GameRepository / domain.ReservationRepository インターフェースに依存
 type seatUseCase struct {
-	seatRepo domain.SeatRepository
-	gameRepo domain.GameRepository // ゲーム存在確認のため
+	seatRepo        domain.SeatRepository
+	gameRepo        domain.GameRepository        // ゲーム存在確認のため
+	reservationRepo domain.ReservationRepository // 期限切れ予約のチケット解放のため
 }
 
 // コンストラクタ
-func NewSeatUseCase(seatRepo domain.SeatRepository, gameRepo domain.GameRepository) SeatUseCase {
-	return &seatUseCase{seatRepo: seatRepo, gameRepo: gameRepo}
+func NewSeatUseCase(seatRepo domain.SeatRepository, gameRepo domain.GameRepository, reservationRepo domain.ReservationRepository) SeatUseCase {
+	return &seatUseCase{seatRepo: seatRepo, gameRepo: gameRepo, reservationRepo: reservationRepo}
 }
 
 // 座席空き状況取得のビジネスロジック
 func (u *seatUseCase) ListSeatAvailability(ctx context.Context, input ListSeatAvailabilityInput) (*ListSeatAvailabilityOutput, error) {
+	// 期限切れ予約のチケットを解放してから空席を集計する
+	if err := u.reservationRepo.ExpireOverdue(ctx); err != nil {
+		return nil, fmt.Errorf("ListSeatAvailability: expire overdue: %w", err)
+	}
+
 	// ゲーム存在確認（存在しない場合は ErrGameNotFound を返す）
 	game, err := u.gameRepo.FindByID(ctx, input.GameID)
 	if err != nil {

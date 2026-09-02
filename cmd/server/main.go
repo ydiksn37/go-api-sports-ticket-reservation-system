@@ -60,7 +60,7 @@ func main() {
 	// UseCase 層
 	userUseCase := usecase.NewUserUseCase(userRepo, passwordHasher)
 	gameUseCase := usecase.NewGameUseCase(gameRepo)
-	seatUseCase := usecase.NewSeatUseCase(seatRepo, gameRepo)
+	seatUseCase := usecase.NewSeatUseCase(seatRepo, gameRepo, reservationRepo)
 	reservationUseCase := usecase.NewReservationUseCase(reservationRepo, ticketRepo, gameRepo, txManager)
 	// Handler 層
 	h := handler.New(handler.Deps{
