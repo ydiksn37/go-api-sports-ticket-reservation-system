@@ -39,6 +39,12 @@ type ReservationRepository interface {
 	Create(ctx context.Context, r *Reservation) error
 	// 指定 ID の予約を取得する
 	FindByID(ctx context.Context, id uuid.UUID) (*Reservation, error)
+	// 指定ユーザーの予約一覧をチケット情報付きで取得する
+	FindByUserIDWithTickets(ctx context.Context, userID uuid.UUID) ([]*Reservation, error)
+	// 指定 ID の予約をチケット情報付きで取得する
+	FindByIDWithTickets(ctx context.Context, id uuid.UUID) (*Reservation, error)
+	// 期限切れの 'pending' 予約を 'expired' に更新し、紐づくチケットを 'available' に解放する
+	ExpireOverdue(ctx context.Context) error
 }
 
 // チケットの DB 操作に関するインターフェース

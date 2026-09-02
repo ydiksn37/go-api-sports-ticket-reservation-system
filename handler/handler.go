@@ -47,8 +47,7 @@ func (h *Handler) Routes() http.Handler {
 	// ユーザー登録
 	mux.HandleFunc("POST /api/user/signup", h.Signup)
 
-	// 認証が必要なエンドポイント（AuthRequired ミドルウェアを適用）
-	// AuthRequired が http.Handler を返すため Handle を使用
+	// ユーザー情報取得（認証あり）
 	mux.Handle("GET /api/user/me", h.AuthRequired(http.HandlerFunc(h.Me)))
 
 	// 試合情報取得
@@ -58,8 +57,10 @@ func (h *Handler) Routes() http.Handler {
 	// 座席空き状況取得
 	mux.HandleFunc("GET /api/games/{id}/seats", h.ListSeatAvailability)
 
-	// 予約管理（認証必須）
+	// 予約管理（認証あり）
 	mux.Handle("POST /api/reservations", h.AuthRequired(http.HandlerFunc(h.CreateReservation)))
+	mux.Handle("GET /api/reservations", h.AuthRequired(http.HandlerFunc(h.ListReservations)))
+	mux.Handle("GET /api/reservations/{id}", h.AuthRequired(http.HandlerFunc(h.GetReservation)))
 
 	// Swagger/OpenAPI 配信
 	registerDocsRoutes(mux)
