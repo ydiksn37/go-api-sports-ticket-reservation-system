@@ -142,3 +142,69 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 	// レスポンスを返す
 	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
 }
+
+// GET /api/reservations のハンドラー
+// 認証済みユーザーの予約一覧を取得
+func (h *Handler) ListReservations(w http.ResponseWriter, r *http.Request) {
+	// 認証済みユーザー ID の取得
+	userID, ok := getUserIDFromContext(r.Context())
+	if !ok {
+		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
+		return
+	}
+
+	// UseCase の呼び出し
+	output, err := h.reservationUseCase.ListReservations(r.Context(), usecase.ListReservationsInput{
+		UserID: userID,
+	})
+	if err != nil {
+		h.respondError(w, errors.New("internal server error"), http.StatusInternalServerError) // 500
+		return
+	}
+
+	// レスポンス DTO に変換
+	responses := make([]reservationResponse, 0, len(output.Reservations))
+	for _, res := range output.Reservations {
+		responses = append(responses, toReservationResponse(res))
+	}
+	h.respondJSON(w, responses, http.StatusOK) // 200
+}
+
+// GET /api/reservations/{id} のハンドラー
+// 認証済みユーザーの予約詳細を取得
+func (h *Handler) GetReservation(w http.ResponseWriter, r *http.Request) {
+	// 認証済みユーザー ID の取得
+	userID, ok := getUserIDFromContext(r.Context())
+	if !ok {
+		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
+		return
+	}
+
+	// パスパラメータから予約 ID を取得
+	idStr := r.PathValue("id")
+	reservationID, err := uuid.Parse(idStr)
+	if err != nil {
+		h.respondError(w, errors.New("invalid reservation id"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// UseCase の呼び出し
+	output, err := h.reservationUseCase.GetReservation(r.Context(), usecase.GetReservationInput{
+		UserID:        userID,
+		ReservationID: reservationID,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, usecase.ErrReservationNotFound):
+			h.respondError(w, err, http.StatusNotFound) // 404
+		case errors.Is(err, usecase.ErrReservationForbidden):
+			h.respondError(w, errors.New("forbidden"), http.StatusForbidden) // 403
+		default:
+			h.respondError(w, errors.New("internal server error"), http.StatusInternalServerError) // 500
+		}
+		return
+	}
+
+	// レスポンスを返す
+	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
+}

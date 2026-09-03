@@ -62,7 +62,7 @@ func (h *Handler) Routes() http.Handler {
 	mux.Handle("GET /api/reservations", h.AuthRequired(http.HandlerFunc(h.ListReservations)))
 	mux.Handle("GET /api/reservations/{id}", h.AuthRequired(http.HandlerFunc(h.GetReservation)))
 
-	// Swagger/OpenAPI 配信
+	// Swagger / OpenAPI 配信
 	registerDocsRoutes(mux)
 
 	return mux
