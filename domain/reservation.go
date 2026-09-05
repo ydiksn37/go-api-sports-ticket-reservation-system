@@ -45,6 +45,8 @@ type ReservationRepository interface {
 	FindByIDWithTickets(ctx context.Context, id uuid.UUID) (*Reservation, error)
 	// 期限切れの 'pending' 予約を 'expired' に更新し、紐づくチケットを 'available' に解放する
 	ExpireOverdue(ctx context.Context) error
+	// 指定 ID の予約ステータスを更新する
+	UpdateStatus(ctx context.Context, tx TxContext, id uuid.UUID, status string) error
 }
 
 // チケットの DB 操作に関するインターフェース
@@ -55,4 +57,6 @@ type TicketRepository interface {
 	BulkReserve(ctx context.Context, tx TxContext, ticketIDs []uuid.UUID, reservationID uuid.UUID) error
 	// 指定予約に紐づくチケット一覧を取得する
 	FindByReservationID(ctx context.Context, reservationID uuid.UUID) ([]*Ticket, error)
+	// 指定予約に紐づく全チケットのステータスを一括更新する
+	BulkUpdateStatus(ctx context.Context, tx TxContext, reservationID uuid.UUID, status string) error
 }
