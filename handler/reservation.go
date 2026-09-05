@@ -208,3 +208,45 @@ func (h *Handler) GetReservation(w http.ResponseWriter, r *http.Request) {
 	// レスポンスを返す
 	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
 }
+
+// PUT /api/reservations/{id}/purchase のハンドラー
+// 認証済みユーザーが仮押さえした予約を確定（決済処理）する
+func (h *Handler) PurchaseReservation(w http.ResponseWriter, r *http.Request) {
+	// 認証済みユーザー ID の取得
+	userID, ok := getUserIDFromContext(r.Context())
+	if !ok {
+		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
+		return
+	}
+
+	// パスパラメータから予約 ID を取得
+	idStr := r.PathValue("id")
+	reservationID, err := uuid.Parse(idStr)
+	if err != nil {
+		h.respondError(w, errors.New("invalid reservation id"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// UseCase の呼び出し
+	output, err := h.reservationUseCase.PurchaseReservation(r.Context(), usecase.PurchaseReservationInput{
+		UserID:        userID,
+		ReservationID: reservationID,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, usecase.ErrReservationNotFound):
+			h.respondError(w, err, http.StatusNotFound) // 404
+		case errors.Is(err, usecase.ErrReservationForbidden):
+			h.respondError(w, errors.New("forbidden"), http.StatusForbidden) // 403
+		case errors.Is(err, usecase.ErrReservationExpired),
+			errors.Is(err, usecase.ErrReservationNotPending):
+			h.respondError(w, err, http.StatusConflict) // 409
+		default:
+			h.respondError(w, errors.New("internal server error"), http.StatusInternalServerError) // 500
+		}
+		return
+	}
+
+	// レスポンスを返す
+	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
+}
