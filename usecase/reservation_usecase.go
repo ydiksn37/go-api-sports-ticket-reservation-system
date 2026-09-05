@@ -17,6 +17,10 @@ import (
 var (
 	// 指定グレードの空き座席が不足している場合のエラー
 	ErrInsufficientSeats = errors.New("insufficient available seats")
+	// 予約が見つからない場合のエラー
+	ErrReservationNotFound = errors.New("reservation not found")
+	// 他ユーザーの予約にアクセスした場合のエラー
+	ErrReservationForbidden = errors.New("forbidden: not your reservation")
 )
 
 // ============================================================
@@ -41,6 +45,27 @@ type CreateReservationOutput struct {
 	Reservation *domain.Reservation
 }
 
+// 予約一覧取得の入力データ
+type ListReservationsInput struct {
+	UserID uuid.UUID
+}
+
+// 予約一覧取得の出力データ
+type ListReservationsOutput struct {
+	Reservations []*domain.Reservation
+}
+
+// 予約詳細取得の入力データ
+type GetReservationInput struct {
+	UserID        uuid.UUID
+	ReservationID uuid.UUID
+}
+
+// 予約詳細取得の出力データ
+type GetReservationOutput struct {
+	Reservation *domain.Reservation
+}
+
 // ============================================================
 // インターフェース定義
 // Handler はこのインターフェースに依存
@@ -50,6 +75,10 @@ type CreateReservationOutput struct {
 type ReservationUseCase interface {
 	// 予約を新規作成する
 	CreateReservation(ctx context.Context, input CreateReservationInput) (*CreateReservationOutput, error)
+	// 認証済みユーザーの予約一覧を取得する
+	ListReservations(ctx context.Context, input ListReservationsInput) (*ListReservationsOutput, error)
+	// 指定 ID の予約詳細を取得する（所有権チェック含む）
+	GetReservation(ctx context.Context, input GetReservationInput) (*GetReservationOutput, error)
 }
 
 // ============================================================
@@ -151,6 +180,43 @@ func (u *reservationUseCase) CreateReservation(ctx context.Context, input Create
 	res.Tickets = allTickets
 
 	return &CreateReservationOutput{Reservation: res}, nil
+}
+
+// 予約一覧取得のビジネスロジック
+func (u *reservationUseCase) ListReservations(ctx context.Context, input ListReservationsInput) (*ListReservationsOutput, error) {
+	// 期限切れ予約のステータス更新 + 紐づくチケット解放
+	if err := u.reservationRepo.ExpireOverdue(ctx); err != nil {
+		return nil, fmt.Errorf("ListReservations: expire overdue: %w", err)
+	}
+
+	// 認証済みユーザーの予約一覧を返す
+	reservations, err := u.reservationRepo.FindByUserIDWithTickets(ctx, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("ListReservations: %w", err)
+	}
+	return &ListReservationsOutput{Reservations: reservations}, nil
+}
+
+// 予約詳細取得のビジネスロジック
+func (u *reservationUseCase) GetReservation(ctx context.Context, input GetReservationInput) (*GetReservationOutput, error) {
+	// 期限切れ予約のステータス更新 + 紐づくチケット解放
+	if err := u.reservationRepo.ExpireOverdue(ctx); err != nil {
+		return nil, fmt.Errorf("GetReservation: expire overdue: %w", err)
+	}
+
+	// 指定 ID の予約詳細を返す
+	reservation, err := u.reservationRepo.FindByIDWithTickets(ctx, input.ReservationID)
+	if err != nil {
+		return nil, fmt.Errorf("GetReservation: %w", err)
+	}
+	if reservation == nil {
+		return nil, ErrReservationNotFound
+	}
+	// 所有権チェック: 認証済みユーザー自身の予約のみ取得可能
+	if reservation.UserID != input.UserID {
+		return nil, ErrReservationForbidden
+	}
+	return &GetReservationOutput{Reservation: reservation}, nil
 }
 
 // コンパイル時に ReservationUseCase インターフェースを満たしているか検証
