@@ -159,6 +159,13 @@ const findReservationByIDWithTicketsQuery = `
 	ORDER BY t.id
 `
 
+// 指定 ID の予約ステータスを一括で更新する
+const updateReservationStatusQuery = `
+	UPDATE reservations
+	SET status = $1, updated_at = NOW()
+	WHERE id = $2
+`
+
 // 予約を新規作成する
 func (r *reservationRepository) Create(ctx context.Context, res *domain.Reservation) error {
 	params := map[string]interface{}{
@@ -245,6 +252,14 @@ func (r *reservationRepository) ExpireOverdue(ctx context.Context) error {
 	}
 
 	return tx.Commit()
+}
+
+// 指定 ID の予約ステータスを更新する
+func (r *reservationRepository) UpdateStatus(ctx context.Context, tx domain.TxContext, id uuid.UUID, status string) error {
+	if _, err := tx.ExecContext(ctx, updateReservationStatusQuery, status, id); err != nil {
+		return fmt.Errorf("reservationRepository.UpdateStatus: %w", err)
+	}
+	return nil
 }
 
 // コンパイル時に domain.ReservationRepository インターフェースを満たしているか検証

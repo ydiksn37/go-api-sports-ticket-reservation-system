@@ -99,6 +99,13 @@ const findTicketsByReservationIDQuery = `
 	ORDER BY t.id
 `
 
+// 予約 ID に紐づくチケットを全部まとめて更新する
+const bulkUpdateTicketStatusQuery = `
+	UPDATE tickets
+	SET status = $1, updated_at = NOW()
+	WHERE reservation_id = $2
+`
+
 // 指定試合・座席グレードの 'available' チケットを quantity 枚ロック取得する
 func (r *ticketRepository) LockAvailable(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, seatGrade string, quantity int) ([]*domain.Ticket, error) {
 	var rows []ticketRow
@@ -139,6 +146,14 @@ func (r *ticketRepository) FindByReservationID(ctx context.Context, reservationI
 		tickets = append(tickets, toTicketDomain(row))
 	}
 	return tickets, nil
+}
+
+// 指定予約に紐づく全チケットのステータスを一括更新する
+func (r *ticketRepository) BulkUpdateStatus(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID, status string) error {
+	if _, err := tx.ExecContext(ctx, bulkUpdateTicketStatusQuery, status, reservationID); err != nil {
+		return fmt.Errorf("ticketRepository.BulkUpdateStatus: %w", err)
+	}
+	return nil
 }
 
 // コンパイル時に domain.TicketRepository インターフェースを満たしているか検証
