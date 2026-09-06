@@ -63,6 +63,8 @@ func (h *Handler) Routes() http.Handler {
 	mux.Handle("GET /api/reservations/{id}", h.AuthRequired(http.HandlerFunc(h.GetReservation)))
 	// 予約確定（決済処理）
 	mux.Handle("PUT /api/reservations/{id}/purchase", h.AuthRequired(http.HandlerFunc(h.PurchaseReservation)))
+	// 予約キャンセル
+	mux.Handle("DELETE /api/reservations/{id}", h.AuthRequired(http.HandlerFunc(h.CancelReservation)))
 
 	// Swagger / OpenAPI 配信
 	registerDocsRoutes(mux)

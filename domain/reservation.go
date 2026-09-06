@@ -59,4 +59,6 @@ type TicketRepository interface {
 	FindByReservationID(ctx context.Context, reservationID uuid.UUID) ([]*Ticket, error)
 	// 指定予約に紐づく全チケットのステータスを一括更新する
 	BulkUpdateStatus(ctx context.Context, tx TxContext, reservationID uuid.UUID, status string) error
+	// 指定予約に紐づく全チケットを解放する（キャンセル時に使用）
+	BulkRelease(ctx context.Context, tx TxContext, reservationID uuid.UUID) error
 }
