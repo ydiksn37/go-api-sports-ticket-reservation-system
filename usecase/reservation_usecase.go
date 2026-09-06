@@ -21,6 +21,10 @@ var (
 	ErrReservationNotFound = errors.New("reservation not found")
 	// 他ユーザーの予約にアクセスした場合のエラー
 	ErrReservationForbidden = errors.New("forbidden: not your reservation")
+	// 予約が期限切れの場合のエラー
+	ErrReservationExpired = errors.New("reservation expired")
+	// 予約が pending 以外のステータスの場合のエラー
+	ErrReservationNotPending = errors.New("reservation is not in pending status")
 )
 
 // ============================================================
@@ -66,6 +70,17 @@ type GetReservationOutput struct {
 	Reservation *domain.Reservation
 }
 
+// 予約確定の入力データ
+type PurchaseReservationInput struct {
+	UserID        uuid.UUID
+	ReservationID uuid.UUID
+}
+
+// 予約確定の出力データ
+type PurchaseReservationOutput struct {
+	Reservation *domain.Reservation
+}
+
 // ============================================================
 // インターフェース定義
 // Handler はこのインターフェースに依存
@@ -77,8 +92,10 @@ type ReservationUseCase interface {
 	CreateReservation(ctx context.Context, input CreateReservationInput) (*CreateReservationOutput, error)
 	// 認証済みユーザーの予約一覧を取得する
 	ListReservations(ctx context.Context, input ListReservationsInput) (*ListReservationsOutput, error)
-	// 指定 ID の予約詳細を取得する（所有権チェック含む）
+	// 指定 ID の予約詳細を取得する
 	GetReservation(ctx context.Context, input GetReservationInput) (*GetReservationOutput, error)
+	// 予約を確定し、チケットを購入済みにする
+	PurchaseReservation(ctx context.Context, input PurchaseReservationInput) (*PurchaseReservationOutput, error)
 }
 
 // ============================================================
@@ -217,6 +234,58 @@ func (u *reservationUseCase) GetReservation(ctx context.Context, input GetReserv
 		return nil, ErrReservationForbidden
 	}
 	return &GetReservationOutput{Reservation: reservation}, nil
+}
+
+// 予約確定のビジネスロジック
+func (u *reservationUseCase) PurchaseReservation(ctx context.Context, input PurchaseReservationInput) (*PurchaseReservationOutput, error) {
+	// 予約をチケット付きで取得
+	reservation, err := u.reservationRepo.FindByIDWithTickets(ctx, input.ReservationID)
+	if err != nil {
+		return nil, fmt.Errorf("PurchaseReservation: %w", err)
+	}
+	if reservation == nil {
+		return nil, ErrReservationNotFound
+	}
+
+	// 所有権チェック: 認証済みユーザー自身の予約のみ購入可能
+	if reservation.UserID != input.UserID {
+		return nil, ErrReservationForbidden
+	}
+
+	// ステータスチェック: pending でなければ購入不可
+	if reservation.Status != "pending" {
+		if reservation.Status == "expired" {
+			return nil, ErrReservationExpired
+		}
+		return nil, ErrReservationNotPending
+	}
+
+	// 期限チェック: status が pending でも期限を超えていれば期限切れ扱い
+	if time.Now().After(reservation.ExpiresAt) {
+		return nil, ErrReservationExpired
+	}
+
+	// トランザクション内で Reservation と Ticket を一括更新
+	txErr := u.txManager.RunInTx(ctx, func(tx domain.TxContext) error {
+		if err := u.reservationRepo.UpdateStatus(ctx, tx, reservation.ID, "confirmed"); err != nil {
+			return fmt.Errorf("UpdateStatus reservation: %w", err)
+		}
+		if err := u.ticketRepo.BulkUpdateStatus(ctx, tx, reservation.ID, "sold"); err != nil {
+			return fmt.Errorf("BulkUpdateStatus tickets: %w", err)
+		}
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
+	}
+
+	// 更新後の状態をエンティティに反映してレスポンス用に返す
+	reservation.Status = "confirmed"
+	for _, t := range reservation.Tickets {
+		t.Status = "sold"
+	}
+
+	return &PurchaseReservationOutput{Reservation: reservation}, nil
 }
 
 // コンパイル時に ReservationUseCase インターフェースを満たしているか検証
