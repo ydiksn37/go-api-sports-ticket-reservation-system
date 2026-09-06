@@ -25,6 +25,10 @@ var (
 	ErrReservationExpired = errors.New("reservation expired")
 	// 予約が pending 以外のステータスの場合のエラー
 	ErrReservationNotPending = errors.New("reservation is not in pending status")
+	// 購入済みの予約をキャンセルしようとした場合のエラー
+	ErrReservationAlreadyPurchased = errors.New("reservation already purchased")
+	// キャンセル済み or 期限切れでキャンセル操作不可の場合のエラー
+	ErrReservationNotCancellable = errors.New("reservation cannot be cancelled")
 )
 
 // ============================================================
@@ -81,6 +85,12 @@ type PurchaseReservationOutput struct {
 	Reservation *domain.Reservation
 }
 
+// 予約キャンセルの入力データ
+type CancelReservationInput struct {
+	UserID        uuid.UUID
+	ReservationID uuid.UUID
+}
+
 // ============================================================
 // インターフェース定義
 // Handler はこのインターフェースに依存
@@ -96,6 +106,8 @@ type ReservationUseCase interface {
 	GetReservation(ctx context.Context, input GetReservationInput) (*GetReservationOutput, error)
 	// 予約を確定し、チケットを購入済みにする
 	PurchaseReservation(ctx context.Context, input PurchaseReservationInput) (*PurchaseReservationOutput, error)
+	// 予約をキャンセルし、チケットを解放する
+	CancelReservation(ctx context.Context, input CancelReservationInput) error
 }
 
 // ============================================================
@@ -286,6 +298,52 @@ func (u *reservationUseCase) PurchaseReservation(ctx context.Context, input Purc
 	}
 
 	return &PurchaseReservationOutput{Reservation: reservation}, nil
+}
+
+// 予約キャンセルのビジネスロジック
+func (u *reservationUseCase) CancelReservation(ctx context.Context, input CancelReservationInput) error {
+	// チケット込みで予約を取得
+	reservation, err := u.reservationRepo.FindByIDWithTickets(ctx, input.ReservationID)
+	if err != nil {
+		return fmt.Errorf("CancelReservation: %w", err)
+	}
+	if reservation == nil {
+		return ErrReservationNotFound
+	}
+
+	// 所有権チェック: 認証済みユーザー自身の予約のみキャンセル可能
+	if reservation.UserID != input.UserID {
+		return ErrReservationForbidden
+	}
+
+	// 購入済みチェック: confirmed の予約はキャンセル不可
+	if reservation.Status == "confirmed" {
+		return ErrReservationAlreadyPurchased
+	}
+
+	// キャンセル済み or 期限切れの予約もキャンセル不可
+	if reservation.Status == "cancelled" || reservation.Status == "expired" {
+		return ErrReservationNotCancellable
+	}
+
+	// キャンセル期限チェック: expires_at を過ぎた pending 予約はキャンセル不可
+	if time.Now().After(reservation.ExpiresAt) {
+		return ErrReservationExpired
+	}
+
+	// トランザクション内で Reservation + Ticket を同時更新（原子性の担保）
+	return u.txManager.RunInTx(ctx, func(tx domain.TxContext) error {
+		// Reservation を更新
+		if err := u.reservationRepo.UpdateStatus(ctx, tx, reservation.ID, "cancelled"); err != nil {
+			return fmt.Errorf("UpdateStatus reservation: %w", err)
+		}
+		// Ticket を更新
+		// status='available', reservation_id=NULL を同時更新
+		if err := u.ticketRepo.BulkRelease(ctx, tx, reservation.ID); err != nil {
+			return fmt.Errorf("BulkRelease tickets: %w", err)
+		}
+		return nil
+	})
 }
 
 // コンパイル時に ReservationUseCase インターフェースを満たしているか検証

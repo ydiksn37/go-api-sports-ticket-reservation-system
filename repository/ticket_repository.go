@@ -106,6 +106,13 @@ const bulkUpdateTicketStatusQuery = `
 	WHERE reservation_id = $2
 `
 
+// 予約 ID に紐づくチケットを available にまとめて更新する
+const bulkReleaseTicketsQuery = `
+	UPDATE tickets
+	SET status = 'available', reservation_id = NULL, updated_at = NOW()
+	WHERE reservation_id = $1
+`
+
 // 指定試合・座席グレードの 'available' チケットを quantity 枚ロック取得する
 func (r *ticketRepository) LockAvailable(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, seatGrade string, quantity int) ([]*domain.Ticket, error) {
 	var rows []ticketRow
@@ -152,6 +159,14 @@ func (r *ticketRepository) FindByReservationID(ctx context.Context, reservationI
 func (r *ticketRepository) BulkUpdateStatus(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID, status string) error {
 	if _, err := tx.ExecContext(ctx, bulkUpdateTicketStatusQuery, status, reservationID); err != nil {
 		return fmt.Errorf("ticketRepository.BulkUpdateStatus: %w", err)
+	}
+	return nil
+}
+
+// 指定予約に紐づく全チケットを解放する（キャンセル時に使用）
+func (r *ticketRepository) BulkRelease(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID) error {
+	if _, err := tx.ExecContext(ctx, bulkReleaseTicketsQuery, reservationID); err != nil {
+		return fmt.Errorf("ticketRepository.BulkRelease: %w", err)
 	}
 	return nil
 }
