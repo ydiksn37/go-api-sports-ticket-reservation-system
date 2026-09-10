@@ -58,8 +58,8 @@ var _ domain.UserRepository = (*UserRepository)(nil)
 
 // domain.GameRepository の仮実装
 type GameRepository struct {
-	FindAllFn   func(ctx context.Context) ([]*domain.Game, error)
-	FindByIDFn  func(ctx context.Context, id uuid.UUID) (*domain.Game, error)
+	FindAllFn  func(ctx context.Context) ([]*domain.Game, error)
+	FindByIDFn func(ctx context.Context, id uuid.UUID) (*domain.Game, error)
 }
 
 func (m *GameRepository) FindAll(ctx context.Context) ([]*domain.Game, error) {
@@ -163,16 +163,16 @@ var _ domain.ReservationRepository = (*ReservationRepository)(nil)
 
 // domain.TicketRepository の仮実装
 type TicketRepository struct {
-	LockAvailableFn     func(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, seatGrade string, quantity int) ([]*domain.Ticket, error)
-	BulkReserveFn       func(ctx context.Context, tx domain.TxContext, ticketIDs []uuid.UUID, reservationID uuid.UUID) error
+	LockAvailableFn       func(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, quantity int) ([]*domain.Ticket, error)
+	BulkReserveFn         func(ctx context.Context, tx domain.TxContext, ticketIDs []uuid.UUID, reservationID uuid.UUID) error
 	FindByReservationIDFn func(ctx context.Context, reservationID uuid.UUID) ([]*domain.Ticket, error)
-	BulkUpdateStatusFn  func(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID, status string) error
-	BulkReleaseFn       func(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID) error
+	BulkUpdateStatusFn    func(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID, status string) error
+	BulkReleaseFn         func(ctx context.Context, tx domain.TxContext, reservationID uuid.UUID) error
 }
 
 func (m *TicketRepository) LockAvailable(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, seatGrade string, quantity int) ([]*domain.Ticket, error) {
 	if m.LockAvailableFn != nil {
-		return m.LockAvailableFn(ctx, tx, gameID, seatGrade, quantity)
+		return m.LockAvailableFn(ctx, tx, gameID, quantity)
 	}
 	return nil, nil
 }
@@ -313,7 +313,7 @@ func NewGame(id uuid.UUID) *domain.Game {
 }
 
 // テスト用のダミー Ticket エンティティを生成する
-func NewTicket(id, gameID uuid.UUID, grade string, price int) *domain.Ticket {
+func NewTicket(id, gameID uuid.UUID, price int) *domain.Ticket {
 	return &domain.Ticket{
 		ID:        id,
 		GameID:    gameID,
