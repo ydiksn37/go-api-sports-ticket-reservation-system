@@ -41,10 +41,10 @@ func TestListSeatAvailability_Success(t *testing.T) {
 	out, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: gameID})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if len(out.Seats) != 2 {
-		t.Errorf("expected: 2 seat grades, got %d", len(out.Seats))
+		t.Errorf("want: 2 seat grades, got: %d", len(out.Seats))
 	}
 }
 
@@ -62,7 +62,7 @@ func TestListSeatAvailability_GameNotFound(t *testing.T) {
 	_, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: uuid.New()})
 
 	if !errors.Is(err, usecase.ErrGameNotFound) {
-		t.Errorf("expected: ErrGameNotFound, got %v", err)
+		t.Errorf("want: ErrGameNotFound, got: %v", err)
 	}
 }
 
@@ -77,7 +77,7 @@ func TestListSeatAvailability_ExpireOverdueError(t *testing.T) {
 	_, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: uuid.New()})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: expire overdue db error, got %v", err)
+		t.Errorf("want: expire overdue db error, got: %v", err)
 	}
 }
 
@@ -102,6 +102,6 @@ func TestListSeatAvailability_SeatRepoError(t *testing.T) {
 	_, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: uuid.New()})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: seat db error, got %v", err)
+		t.Errorf("want: seat db error, got: %v", err)
 	}
 }

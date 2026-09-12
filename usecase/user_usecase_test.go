@@ -32,13 +32,13 @@ func TestSignup_Success(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out == nil {
-		t.Fatal("expected: output, got nil")
+		t.Fatal("want: output, got: nil")
 	}
 	if out.UserID == uuid.Nil {
-		t.Error("expected: non-nil UserID")
+		t.Error("want: non-nil UserID")
 	}
 }
 
@@ -58,7 +58,7 @@ func TestSignup_EmailAlreadyExists(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrEmailAlreadyExists) {
-		t.Errorf("expected: ErrEmailAlreadyExists, got %v", err)
+		t.Errorf("want: ErrEmailAlreadyExists, got: %v", err)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestSignup_UsernameAlreadyExists(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrUsernameAlreadyExists) {
-		t.Errorf("expected: ErrUsernameAlreadyExists, got %v", err)
+		t.Errorf("want: ErrUsernameAlreadyExists, got: %v", err)
 	}
 }
 
@@ -101,7 +101,7 @@ func TestSignup_HashError(t *testing.T) {
 	})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: bcrypt failure error, got %v", err)
+		t.Errorf("want: bcrypt failure error, got: %v", err)
 	}
 }
 
@@ -121,7 +121,7 @@ func TestSignup_RepoFindByEmailError(t *testing.T) {
 	})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: db connection error, got %v", err)
+		t.Errorf("want: db connection error, got: %v", err)
 	}
 }
 
@@ -143,16 +143,16 @@ func TestMe_Success(t *testing.T) {
 	out, err := uc.Me(context.Background(), usecase.MeInput{UserID: userID})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out.UserID != expected.ID {
-		t.Errorf("expected: UserID %v, got %v", userID, out.UserID)
+		t.Errorf("want: UserID %v, got: %v", userID, out.UserID)
 	}
 	if out.Username != expected.Username {
-		t.Errorf("expected: Username %q, got %q", expected.Username, out.Username)
+		t.Errorf("want: Username %q, got: %q", expected.Username, out.Username)
 	}
 	if out.Email != expected.Email {
-		t.Errorf("expected: Email %q, got %q", expected.Email, out.Email)
+		t.Errorf("want: Email %q, got: %q", expected.Email, out.Email)
 	}
 }
 
@@ -166,6 +166,6 @@ func TestMe_NotFound(t *testing.T) {
 	_, err := uc.Me(context.Background(), usecase.MeInput{UserID: uuid.New()})
 
 	if !errors.Is(err, usecase.ErrUserNotFound) {
-		t.Errorf("expected: ErrUserNotFound, got %v", err)
+		t.Errorf("want: ErrUserNotFound, got: %v", err)
 	}
 }

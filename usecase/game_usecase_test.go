@@ -33,10 +33,10 @@ func TestListGames_Success(t *testing.T) {
 	out, err := uc.ListGames(context.Background())
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if len(out.Games) != 2 {
-		t.Errorf("expected: 2 games, got %d", len(out.Games))
+		t.Errorf("want: 2 games, got: %d", len(out.Games))
 	}
 }
 
@@ -51,10 +51,10 @@ func TestListGames_Empty(t *testing.T) {
 	out, err := uc.ListGames(context.Background())
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if len(out.Games) != 0 {
-		t.Errorf("expected: 0 games, got %d", len(out.Games))
+		t.Errorf("want: 0 games, got: %d", len(out.Games))
 	}
 }
 
@@ -70,7 +70,7 @@ func TestListGames_RepoError(t *testing.T) {
 	_, err := uc.ListGames(context.Background())
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: db connection error, got %v", err)
+		t.Errorf("want: db connection error, got: %v", err)
 	}
 }
 
@@ -92,10 +92,10 @@ func TestGetGame_Success(t *testing.T) {
 	out, err := uc.GetGame(context.Background(), usecase.GetGameInput{GameID: gameID})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out.Game.ID != gameID {
-		t.Errorf("expected: game ID %v, got %v", gameID, out.Game.ID)
+		t.Errorf("want: game ID %v, got: %v", gameID, out.Game.ID)
 	}
 }
 
@@ -109,7 +109,7 @@ func TestGetGame_NotFound(t *testing.T) {
 	_, err := uc.GetGame(context.Background(), usecase.GetGameInput{GameID: uuid.New()})
 
 	if !errors.Is(err, usecase.ErrGameNotFound) {
-		t.Errorf("expected: ErrGameNotFound, got %v", err)
+		t.Errorf("want: ErrGameNotFound, got: %v", err)
 	}
 }
 
@@ -125,6 +125,6 @@ func TestGetGame_RepoError(t *testing.T) {
 	_, err := uc.GetGame(context.Background(), usecase.GetGameInput{GameID: uuid.New()})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: db connection error, got %v", err)
+		t.Errorf("want: db connection error, got: %v", err)
 	}
 }

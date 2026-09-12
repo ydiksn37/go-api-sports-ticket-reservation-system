@@ -67,16 +67,16 @@ func TestCreateReservation_Success(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out.Reservation == nil {
-		t.Fatal("expected: reservation, got nil")
+		t.Fatal("want: reservation, got: nil")
 	}
 	if out.Reservation.UserID != userID {
-		t.Errorf("expected: UserID %v, got %v", userID, out.Reservation.UserID)
+		t.Errorf("want: UserID %v, got: %v", userID, out.Reservation.UserID)
 	}
 	if len(out.Reservation.Tickets) != 2 {
-		t.Errorf("expected: 2 tickets, got %d", len(out.Reservation.Tickets))
+		t.Errorf("want: 2 tickets, got: %d", len(out.Reservation.Tickets))
 	}
 }
 
@@ -94,7 +94,7 @@ func TestCreateReservation_GameNotFound(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrGameNotFound) {
-		t.Errorf("expected: ErrGameNotFound, got %v", err)
+		t.Errorf("want: ErrGameNotFound, got: %v", err)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrInsufficientSeats) {
-		t.Errorf("expected ErrInsufficientSeats, got %v", err)
+		t.Errorf("want: ErrInsufficientSeats, got: %v", err)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestCreateReservation_TxError(t *testing.T) {
 	})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: tx begin error, got %v", err)
+		t.Errorf("want: tx begin error, got: %v", err)
 	}
 }
 
@@ -173,10 +173,10 @@ func TestListReservations_Success(t *testing.T) {
 	out, err := uc.ListReservations(context.Background(), usecase.ListReservationsInput{UserID: userID})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if len(out.Reservations) != 2 {
-		t.Errorf("expected: 2 reservations, got %d", len(out.Reservations))
+		t.Errorf("want: 2 reservations, got: %d", len(out.Reservations))
 	}
 }
 
@@ -191,7 +191,7 @@ func TestListReservations_ExpireOverdueError(t *testing.T) {
 	_, err := uc.ListReservations(context.Background(), usecase.ListReservationsInput{UserID: uuid.New()})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: expire overdue error, got %v", err)
+		t.Errorf("want: expire overdue error, got: %v", err)
 	}
 }
 
@@ -219,10 +219,10 @@ func TestGetReservation_Success(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out.Reservation.ID != reservationID {
-		t.Errorf("expected: ReservationID %v, got %v", reservationID, out.Reservation.ID)
+		t.Errorf("want: ReservationID %v, got: %v", reservationID, out.Reservation.ID)
 	}
 }
 
@@ -242,7 +242,7 @@ func TestGetReservation_NotFound(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotFound) {
-		t.Errorf("expected: ErrReservationNotFound, got %v", err)
+		t.Errorf("want: ErrReservationNotFound, got: %v", err)
 	}
 }
 
@@ -268,7 +268,7 @@ func TestGetReservation_Forbidden(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationForbidden) {
-		t.Errorf("expected: ErrReservationForbidden, got %v", err)
+		t.Errorf("want: ErrReservationForbidden, got: %v", err)
 	}
 }
 
@@ -303,10 +303,10 @@ func TestPurchaseReservation_Success(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 	if out.Reservation.Status != "confirmed" {
-		t.Errorf("expected: status 'confirmed', got %q", out.Reservation.Status)
+		t.Errorf("want: status 'confirmed', got: %q", out.Reservation.Status)
 	}
 }
 
@@ -325,7 +325,7 @@ func TestPurchaseReservation_NotFound(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotFound) {
-		t.Errorf("expected: ErrReservationNotFound, got %v", err)
+		t.Errorf("want: ErrReservationNotFound, got: %v", err)
 	}
 }
 
@@ -349,7 +349,7 @@ func TestPurchaseReservation_Forbidden(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationForbidden) {
-		t.Errorf("expected: ErrReservationForbidden, got %v", err)
+		t.Errorf("want: ErrReservationForbidden, got: %v", err)
 	}
 }
 
@@ -373,7 +373,7 @@ func TestPurchaseReservation_Expired_ByStatus(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationExpired) {
-		t.Errorf("expected: ErrReservationExpired, got %v", err)
+		t.Errorf("want: ErrReservationExpired, got: %v", err)
 	}
 }
 
@@ -397,7 +397,7 @@ func TestPurchaseReservation_Expired_ByTime(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationExpired) {
-		t.Errorf("expected: ErrReservationExpired, got %v", err)
+		t.Errorf("want: ErrReservationExpired, got: %v", err)
 	}
 }
 
@@ -421,7 +421,7 @@ func TestPurchaseReservation_NotPending(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotPending) {
-		t.Errorf("expected: ErrReservationNotPending, got %v", err)
+		t.Errorf("want: ErrReservationNotPending, got: %v", err)
 	}
 }
 
@@ -456,7 +456,7 @@ func TestCancelReservation_Success(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("expected: no error, got %v", err)
+		t.Fatalf("want: no error, got: %v", err)
 	}
 }
 
@@ -475,7 +475,7 @@ func TestCancelReservation_NotFound(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotFound) {
-		t.Errorf("expected: ErrReservationNotFound, got %v", err)
+		t.Errorf("want: ErrReservationNotFound, got: %v", err)
 	}
 }
 
@@ -499,7 +499,7 @@ func TestCancelReservation_Forbidden(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationForbidden) {
-		t.Errorf("expected: ErrReservationForbidden, got %v", err)
+		t.Errorf("want: ErrReservationForbidden, got: %v", err)
 	}
 }
 
@@ -523,7 +523,7 @@ func TestCancelReservation_AlreadyPurchased(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationAlreadyPurchased) {
-		t.Errorf("expected: ErrReservationAlreadyPurchased, got %v", err)
+		t.Errorf("want: ErrReservationAlreadyPurchased, got: %v", err)
 	}
 }
 
@@ -547,7 +547,7 @@ func TestCancelReservation_NotCancellable_Cancelled(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotCancellable) {
-		t.Errorf("expected: ErrReservationNotCancellable, got %v", err)
+		t.Errorf("want: ErrReservationNotCancellable, got: %v", err)
 	}
 }
 
@@ -571,7 +571,7 @@ func TestCancelReservation_NotCancellable_Expired(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationNotCancellable) {
-		t.Errorf("expected: ErrReservationNotCancellable, got %v", err)
+		t.Errorf("want: ErrReservationNotCancellable, got: %v", err)
 	}
 }
 
@@ -595,7 +595,7 @@ func TestCancelReservation_Expired_ByTime(t *testing.T) {
 	})
 
 	if !errors.Is(err, usecase.ErrReservationExpired) {
-		t.Errorf("expected: ErrReservationExpired, got %v", err)
+		t.Errorf("want: ErrReservationExpired, got: %v", err)
 	}
 }
 
@@ -624,6 +624,6 @@ func TestCancelReservation_TxError(t *testing.T) {
 	})
 
 	if !errors.Is(err, wantErr) {
-		t.Errorf("expected: tx error, got %v", err)
+		t.Errorf("want: tx error, got: %v", err)
 	}
 }
