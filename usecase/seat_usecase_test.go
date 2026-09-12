@@ -3,7 +3,7 @@ package usecase_test
 import (
 	"42tokyo-road-to-dena-server/domain"
 	"42tokyo-road-to-dena-server/usecase"
-	"42tokyo-road-to-dena-server/usecase/mock"
+	repositorymock "42tokyo-road-to-dena-server/usecase/mock"
 	"context"
 	"errors"
 	"fmt"
@@ -19,7 +19,7 @@ import (
 func TestListSeatAvailability_Success(t *testing.T) {
 	gameID := uuid.New()
 
-	seatRepo := &mock.SeatRepository{
+	seatRepo := &repositorymock.SeatRepository{
 		FindAvailabilityByGameIDFn: func(_ context.Context, _ uuid.UUID) ([]*domain.SeatAvailability, error) {
 			return []*domain.SeatAvailability{
 				{SeatGrade: "S指定席", Price: 6800, TotalSeats: 10, AvailableSeats: 5, ReservedSeats: 2, SoldSeats: 3},
@@ -27,12 +27,12 @@ func TestListSeatAvailability_Success(t *testing.T) {
 			}, nil
 		},
 	}
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
-			return mock.NewGame(id), nil
+			return repositorymock.NewGame(id), nil
 		},
 	}
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 	}
 
@@ -49,15 +49,15 @@ func TestListSeatAvailability_Success(t *testing.T) {
 }
 
 func TestListSeatAvailability_GameNotFound(t *testing.T) {
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		// 試合が見つからない
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) { return nil, nil },
 	}
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 	}
 
-	uc := usecase.NewSeatUseCase(&mock.SeatRepository{}, gameRepo, reservationRepo)
+	uc := usecase.NewSeatUseCase(&repositorymock.SeatRepository{}, gameRepo, reservationRepo)
 
 	_, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: uuid.New()})
 
@@ -68,11 +68,11 @@ func TestListSeatAvailability_GameNotFound(t *testing.T) {
 
 func TestListSeatAvailability_ExpireOverdueError(t *testing.T) {
 	wantErr := fmt.Errorf("expire overdue db error")
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return wantErr },
 	}
 
-	uc := usecase.NewSeatUseCase(&mock.SeatRepository{}, &mock.GameRepository{}, reservationRepo)
+	uc := usecase.NewSeatUseCase(&repositorymock.SeatRepository{}, &repositorymock.GameRepository{}, reservationRepo)
 
 	_, err := uc.ListSeatAvailability(context.Background(), usecase.ListSeatAvailabilityInput{GameID: uuid.New()})
 
@@ -83,17 +83,17 @@ func TestListSeatAvailability_ExpireOverdueError(t *testing.T) {
 
 func TestListSeatAvailability_SeatRepoError(t *testing.T) {
 	wantErr := fmt.Errorf("seat db error")
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
-			return mock.NewGame(id), nil
+			return repositorymock.NewGame(id), nil
 		},
 	}
-	seatRepo := &mock.SeatRepository{
+	seatRepo := &repositorymock.SeatRepository{
 		FindAvailabilityByGameIDFn: func(_ context.Context, _ uuid.UUID) ([]*domain.SeatAvailability, error) {
 			return nil, wantErr
 		},
 	}
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 	}
 

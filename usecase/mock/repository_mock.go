@@ -1,4 +1,4 @@
-package mock
+package repositorymock
 
 import (
 	"42tokyo-road-to-dena-server/domain"

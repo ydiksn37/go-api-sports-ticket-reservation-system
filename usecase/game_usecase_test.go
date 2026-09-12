@@ -3,7 +3,7 @@ package usecase_test
 import (
 	"42tokyo-road-to-dena-server/domain"
 	"42tokyo-road-to-dena-server/usecase"
-	"42tokyo-road-to-dena-server/usecase/mock"
+	repositorymock "42tokyo-road-to-dena-server/usecase/mock"
 	"context"
 	"errors"
 	"fmt"
@@ -20,11 +20,11 @@ func TestListGames_Success(t *testing.T) {
 	gameID1 := uuid.New()
 	gameID2 := uuid.New()
 
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindAllFn: func(_ context.Context) ([]*domain.Game, error) {
 			return []*domain.Game{
-				mock.NewGame(gameID1),
-				mock.NewGame(gameID2),
+				repositorymock.NewGame(gameID1),
+				repositorymock.NewGame(gameID2),
 			}, nil
 		},
 	}
@@ -41,7 +41,7 @@ func TestListGames_Success(t *testing.T) {
 }
 
 func TestListGames_Empty(t *testing.T) {
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindAllFn: func(_ context.Context) ([]*domain.Game, error) {
 			return []*domain.Game{}, nil
 		},
@@ -60,7 +60,7 @@ func TestListGames_Empty(t *testing.T) {
 
 func TestListGames_RepoError(t *testing.T) {
 	wantErr := fmt.Errorf("db connection error")
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindAllFn: func(_ context.Context) ([]*domain.Game, error) {
 			return nil, wantErr
 		},
@@ -80,9 +80,9 @@ func TestListGames_RepoError(t *testing.T) {
 
 func TestGetGame_Success(t *testing.T) {
 	gameID := uuid.New()
-	expected := mock.NewGame(gameID)
+	expected := repositorymock.NewGame(gameID)
 
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
 			return expected, nil
 		},
@@ -100,7 +100,7 @@ func TestGetGame_Success(t *testing.T) {
 }
 
 func TestGetGame_NotFound(t *testing.T) {
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		// 試合が見つからない
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) { return nil, nil },
 	}
@@ -115,7 +115,7 @@ func TestGetGame_NotFound(t *testing.T) {
 
 func TestGetGame_RepoError(t *testing.T) {
 	wantErr := fmt.Errorf("db error")
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) {
 			return nil, wantErr
 		},

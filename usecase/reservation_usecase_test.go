@@ -3,7 +3,7 @@ package usecase_test
 import (
 	"42tokyo-road-to-dena-server/domain"
 	"42tokyo-road-to-dena-server/usecase"
-	"42tokyo-road-to-dena-server/usecase/mock"
+	repositorymock "42tokyo-road-to-dena-server/usecase/mock"
 	"context"
 	"errors"
 	"fmt"
@@ -19,10 +19,10 @@ import (
 
 // テスト用の ReservationUseCase を組み立てるヘルパー
 func newReservationUseCase(
-	reservationRepo *mock.ReservationRepository,
-	ticketRepo *mock.TicketRepository,
-	gameRepo *mock.GameRepository,
-	txManager *mock.TxManager,
+	reservationRepo *repositorymock.ReservationRepository,
+	ticketRepo *repositorymock.TicketRepository,
+	gameRepo *repositorymock.GameRepository,
+	txManager *repositorymock.TxManager,
 ) usecase.ReservationUseCase {
 	return usecase.NewReservationUseCase(reservationRepo, ticketRepo, gameRepo, txManager)
 }
@@ -36,17 +36,17 @@ func TestCreateReservation_Success(t *testing.T) {
 	userID := uuid.New()
 	ticketID := uuid.New()
 
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
-			return mock.NewGame(id), nil
+			return repositorymock.NewGame(id), nil
 		},
 	}
-	ticketRepo := &mock.TicketRepository{
+	ticketRepo := &repositorymock.TicketRepository{
 		LockAvailableFn: func(_ context.Context, _ domain.TxContext, gID uuid.UUID, qty int) ([]*domain.Ticket, error) {
 			// qty 枚分のチケットを返す
 			tickets := make([]*domain.Ticket, qty)
 			for i := range tickets {
-				tickets[i] = mock.NewTicket(ticketID, gID, 5000)
+				tickets[i] = repositorymock.NewTicket(ticketID, gID, 5000)
 			}
 			return tickets, nil
 		},
@@ -54,11 +54,11 @@ func TestCreateReservation_Success(t *testing.T) {
 			return nil
 		},
 	}
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		CreateFn: func(_ context.Context, _ *domain.Reservation) error { return nil },
 	}
 
-	uc := newReservationUseCase(reservationRepo, ticketRepo, gameRepo, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, ticketRepo, gameRepo, &repositorymock.TxManager{})
 
 	out, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: userID,
@@ -81,11 +81,11 @@ func TestCreateReservation_Success(t *testing.T) {
 }
 
 func TestCreateReservation_GameNotFound(t *testing.T) {
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) { return nil, nil },
 	}
 
-	uc := newReservationUseCase(&mock.ReservationRepository{}, &mock.TicketRepository{}, gameRepo, &mock.TxManager{})
+	uc := newReservationUseCase(&repositorymock.ReservationRepository{}, &repositorymock.TicketRepository{}, gameRepo, &repositorymock.TxManager{})
 
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
@@ -99,19 +99,19 @@ func TestCreateReservation_GameNotFound(t *testing.T) {
 }
 
 func TestCreateReservation_InsufficientSeats(t *testing.T) {
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
-			return mock.NewGame(id), nil
+			return repositorymock.NewGame(id), nil
 		},
 	}
-	ticketRepo := &mock.TicketRepository{
+	ticketRepo := &repositorymock.TicketRepository{
 		// 空スライスを返す = 残席 0
 		LockAvailableFn: func(_ context.Context, _ domain.TxContext, _ uuid.UUID, _ int) ([]*domain.Ticket, error) {
 			return []*domain.Ticket{}, nil
 		},
 	}
 
-	uc := newReservationUseCase(&mock.ReservationRepository{}, ticketRepo, gameRepo, &mock.TxManager{})
+	uc := newReservationUseCase(&repositorymock.ReservationRepository{}, ticketRepo, gameRepo, &repositorymock.TxManager{})
 
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
@@ -126,18 +126,18 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 
 func TestCreateReservation_TxError(t *testing.T) {
 	wantErr := fmt.Errorf("tx begin error")
-	gameRepo := &mock.GameRepository{
+	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
-			return mock.NewGame(id), nil
+			return repositorymock.NewGame(id), nil
 		},
 	}
-	txManager := &mock.TxManager{
+	txManager := &repositorymock.TxManager{
 		RunInTxFn: func(_ context.Context, _ func(domain.TxContext) error) error {
 			return wantErr
 		},
 	}
 
-	uc := newReservationUseCase(&mock.ReservationRepository{}, &mock.TicketRepository{}, gameRepo, txManager)
+	uc := newReservationUseCase(&repositorymock.ReservationRepository{}, &repositorymock.TicketRepository{}, gameRepo, txManager)
 
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
@@ -157,18 +157,18 @@ func TestCreateReservation_TxError(t *testing.T) {
 func TestListReservations_Success(t *testing.T) {
 	userID := uuid.New()
 	reservations := []*domain.Reservation{
-		mock.NewReservation(uuid.New(), userID, uuid.New(), "pending", time.Now().Add(10*time.Minute)),
-		mock.NewReservation(uuid.New(), userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute)),
+		repositorymock.NewReservation(uuid.New(), userID, uuid.New(), "pending", time.Now().Add(10*time.Minute)),
+		repositorymock.NewReservation(uuid.New(), userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute)),
 	}
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 		FindByUserIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) ([]*domain.Reservation, error) {
 			return reservations, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	out, err := uc.ListReservations(context.Background(), usecase.ListReservationsInput{UserID: userID})
 
@@ -182,11 +182,11 @@ func TestListReservations_Success(t *testing.T) {
 
 func TestListReservations_ExpireOverdueError(t *testing.T) {
 	wantErr := fmt.Errorf("expire overdue error")
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return wantErr },
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.ListReservations(context.Background(), usecase.ListReservationsInput{UserID: uuid.New()})
 
@@ -202,16 +202,16 @@ func TestListReservations_ExpireOverdueError(t *testing.T) {
 func TestGetReservation_Success(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 		FindByIDWithTicketsFn: func(_ context.Context, id uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	out, err := uc.GetReservation(context.Background(), usecase.GetReservationInput{
 		UserID:        userID,
@@ -227,14 +227,14 @@ func TestGetReservation_Success(t *testing.T) {
 }
 
 func TestGetReservation_NotFound(t *testing.T) {
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return nil, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.GetReservation(context.Background(), usecase.GetReservationInput{
 		UserID:        uuid.New(),
@@ -250,16 +250,16 @@ func TestGetReservation_Forbidden(t *testing.T) {
 	ownerID := uuid.New()
 	otherUserID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		ExpireOverdueFn: func(_ context.Context) error { return nil },
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	// otherUserID で ownerID の予約を取得しようとする
 	_, err := uc.GetReservation(context.Background(), usecase.GetReservationInput{
@@ -279,9 +279,9 @@ func TestGetReservation_Forbidden(t *testing.T) {
 func TestPurchaseReservation_Success(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
@@ -289,13 +289,13 @@ func TestPurchaseReservation_Success(t *testing.T) {
 			return nil
 		},
 	}
-	ticketRepo := &mock.TicketRepository{
+	ticketRepo := &repositorymock.TicketRepository{
 		BulkUpdateStatusFn: func(_ context.Context, _ domain.TxContext, _ uuid.UUID, _ string) error {
 			return nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, ticketRepo, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, ticketRepo, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	out, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        userID,
@@ -311,13 +311,13 @@ func TestPurchaseReservation_Success(t *testing.T) {
 }
 
 func TestPurchaseReservation_NotFound(t *testing.T) {
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return nil, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        uuid.New(),
@@ -333,15 +333,15 @@ func TestPurchaseReservation_Forbidden(t *testing.T) {
 	ownerID := uuid.New()
 	otherUserID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        otherUserID,
@@ -357,15 +357,15 @@ func TestPurchaseReservation_Expired_ByStatus(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status が "expired" の予約
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(-1*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(-1*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        userID,
@@ -381,15 +381,15 @@ func TestPurchaseReservation_Expired_ByTime(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status は pending だが期限超過
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        userID,
@@ -405,15 +405,15 @@ func TestPurchaseReservation_NotPending(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status が "confirmed" = pending 以外
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	_, err := uc.PurchaseReservation(context.Background(), usecase.PurchaseReservationInput{
 		UserID:        userID,
@@ -432,9 +432,9 @@ func TestPurchaseReservation_NotPending(t *testing.T) {
 func TestCancelReservation_Success(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
@@ -442,13 +442,13 @@ func TestCancelReservation_Success(t *testing.T) {
 			return nil
 		},
 	}
-	ticketRepo := &mock.TicketRepository{
+	ticketRepo := &repositorymock.TicketRepository{
 		BulkReleaseFn: func(_ context.Context, _ domain.TxContext, _ uuid.UUID) error {
 			return nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, ticketRepo, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, ticketRepo, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
@@ -461,13 +461,13 @@ func TestCancelReservation_Success(t *testing.T) {
 }
 
 func TestCancelReservation_NotFound(t *testing.T) {
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return nil, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        uuid.New(),
@@ -483,15 +483,15 @@ func TestCancelReservation_Forbidden(t *testing.T) {
 	ownerID := uuid.New()
 	otherUserID := uuid.New()
 	reservationID := uuid.New()
-	res := mock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, ownerID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        otherUserID,
@@ -507,15 +507,15 @@ func TestCancelReservation_AlreadyPurchased(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status が "confirmed" = 購入済み
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
@@ -531,15 +531,15 @@ func TestCancelReservation_NotCancellable_Cancelled(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status が "cancelled" = 既にキャンセル済み
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "cancelled", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "cancelled", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
@@ -555,15 +555,15 @@ func TestCancelReservation_NotCancellable_Expired(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status が "expired"
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
@@ -579,15 +579,15 @@ func TestCancelReservation_Expired_ByTime(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	// status は pending だが期限超過
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, &mock.TxManager{})
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
@@ -603,20 +603,20 @@ func TestCancelReservation_TxError(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
 	wantErr := fmt.Errorf("tx error")
-	res := mock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
+	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(10*time.Minute))
 
-	reservationRepo := &mock.ReservationRepository{
+	reservationRepo := &repositorymock.ReservationRepository{
 		FindByIDWithTicketsFn: func(_ context.Context, _ uuid.UUID) (*domain.Reservation, error) {
 			return res, nil
 		},
 	}
-	txManager := &mock.TxManager{
+	txManager := &repositorymock.TxManager{
 		RunInTxFn: func(_ context.Context, _ func(domain.TxContext) error) error {
 			return wantErr
 		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, &mock.TicketRepository{}, &mock.GameRepository{}, txManager)
+	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, txManager)
 
 	err := uc.CancelReservation(context.Background(), usecase.CancelReservationInput{
 		UserID:        userID,
