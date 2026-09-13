@@ -101,6 +101,44 @@ func TestCreateReservation_Handler_InvalidQuantity(t *testing.T) {
 	}
 }
 
+func TestCreateReservation_Handler_InvalidSeatGrade(t *testing.T) {
+	// seat_grade が有効な値以外の場合 → 400
+	userID := uuid.New()
+	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
+
+	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
+		{"seat_grade": "VIP", "quantity": 1},
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
+	req.Header.Set("Content-Type", "application/json")
+	req = withUserID(req, userID)
+	rec := httptest.NewRecorder()
+	h.CreateReservation(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestCreateReservation_Handler_InvalidSeatGrade_Empty(t *testing.T) {
+	// seat_grade が空文字の場合 → 400
+	userID := uuid.New()
+	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
+
+	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
+		{"seat_grade": "", "quantity": 1},
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
+	req.Header.Set("Content-Type", "application/json")
+	req = withUserID(req, userID)
+	rec := httptest.NewRecorder()
+	h.CreateReservation(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
 func TestCreateReservation_Handler_GameNotFound(t *testing.T) {
 	userID := uuid.New()
 	ucMock := &handlermock.ReservationUseCase{

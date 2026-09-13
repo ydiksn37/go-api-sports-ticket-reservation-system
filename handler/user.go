@@ -55,9 +55,27 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// バリデーション
+	// バリデーション: 必須フィールドの空チェック
 	if req.Name == "" || req.Email == "" || req.Password == "" {
 		h.respondError(w, errors.New("name, email, and password are required"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// バリデーション: email
+	if !isValidEmail(req.Email) {
+		h.respondError(w, errors.New("invalid email format"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// バリデーション: username
+	if !isValidUsername(req.Name) {
+		h.respondError(w, errors.New("username must be 3-50 characters and contain only alphanumeric, underscore, or hyphen"), http.StatusBadRequest) // 400
+		return
+	}
+
+	// バリデーション: password
+	if !isValidPassword(req.Password) {
+		h.respondError(w, errors.New("password must be between 8 and 72 characters"), http.StatusBadRequest) // 400
 		return
 	}
 

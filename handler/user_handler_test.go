@@ -88,7 +88,7 @@ func TestSignup_Handler_EmailConflict(t *testing.T) {
 	}
 	h := newTestHandler(Deps{UserUseCase: ucMock})
 
-	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "pass"))
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "password123"))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	h.Signup(rec, req)
@@ -106,13 +106,116 @@ func TestSignup_Handler_UsernameConflict(t *testing.T) {
 	}
 	h := newTestHandler(Deps{UserUseCase: ucMock})
 
-	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "pass"))
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "password123"))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	h.Signup(rec, req)
 
 	if rec.Code != http.StatusConflict {
 		t.Errorf("want: 409, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidEmail(t *testing.T) {
+	// email が RFC 形式に沿っていない場合 → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "notanemail", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidEmail_MissingAt(t *testing.T) {
+	// @ が含まれていない email → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakemanexample.com", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidUsername_TooShort(t *testing.T) {
+	// username が 2 文字以下 → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("ab", "fakeman@example.com", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidUsername_InvalidChars(t *testing.T) {
+	// username にスペースや記号が含まれる → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("user name!", "fakeman@example.com", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidUsername_TooLong(t *testing.T) {
+	// username が 51 文字以上 → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	longName := "a123456789012345678901234567890123456789012345678901" // 51 文字
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody(longName, "fakeman@example.com", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_InvalidPassword_TooShort(t *testing.T) {
+	// password が 7 文字以下 → 400
+	h := newTestHandler(Deps{UserUseCase: &handlermock.UserUseCase{}})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "short12"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+}
+
+func TestSignup_Handler_ValidInput_PassesValidation(t *testing.T) {
+	ucMock := &handlermock.UserUseCase{
+		SignupFn: func(_ context.Context, _ usecase.SignupInput) (*usecase.SignupOutput, error) {
+			return nil, usecase.ErrEmailAlreadyExists
+		},
+	}
+	h := newTestHandler(Deps{UserUseCase: ucMock})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/user/signup", signupBody("fakeman", "fakeman@example.com", "password123"))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.Signup(rec, req)
+
+	if rec.Code != http.StatusConflict {
+		t.Errorf("want: 409 (valid input passes validation and reaches UseCase), got: %d", rec.Code)
 	}
 }
 
