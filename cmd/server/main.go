@@ -62,6 +62,24 @@ func main() {
 	gameUseCase := usecase.NewGameUseCase(gameRepo)
 	seatUseCase := usecase.NewSeatUseCase(seatRepo, gameRepo, reservationRepo)
 	reservationUseCase := usecase.NewReservationUseCase(reservationRepo, ticketRepo, gameRepo, txManager)
+
+	// ログディレクトリとログファイルの準備
+	if err := os.MkdirAll("logs", 0755); err != nil {
+		log.Fatalf("Failed to create logs directory: %v", err)
+	}
+	accessFile, err := os.OpenFile("logs/access.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open access.log: %v", err)
+	}
+	defer accessFile.Close()
+	errorFile, err := os.OpenFile("logs/error.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open error.log: %v", err)
+	}
+	defer errorFile.Close()
+	accessLogger := log.New(accessFile, "", log.LstdFlags)
+	errorLogger := log.New(errorFile, "", log.LstdFlags)
+
 	// Handler 層
 	h := handler.New(handler.Deps{
 		AuthBundle:         authBundle,
@@ -70,6 +88,8 @@ func main() {
 		GameUseCase:        gameUseCase,
 		SeatUseCase:        seatUseCase,
 		ReservationUseCase: reservationUseCase,
+		AccessLogger:       accessLogger,
+		ErrorLogger:        errorLogger,
 	})
 
 	// HTTP サーバーの設定
