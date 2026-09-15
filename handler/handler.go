@@ -16,6 +16,8 @@ type Deps struct {
 	GameUseCase        usecase.GameUseCase
 	SeatUseCase        usecase.SeatUseCase
 	ReservationUseCase usecase.ReservationUseCase
+	AccessLogger       *log.Logger
+	ErrorLogger        *log.Logger
 }
 
 type Handler struct {
@@ -25,6 +27,8 @@ type Handler struct {
 	gameUseCase        usecase.GameUseCase
 	seatUseCase        usecase.SeatUseCase
 	reservationUseCase usecase.ReservationUseCase
+	accessLogger       *log.Logger
+	errorLogger        *log.Logger
 }
 
 func New(deps Deps) *Handler {
@@ -35,6 +39,8 @@ func New(deps Deps) *Handler {
 		gameUseCase:        deps.GameUseCase,
 		seatUseCase:        deps.SeatUseCase,
 		reservationUseCase: deps.ReservationUseCase,
+		accessLogger:       deps.AccessLogger,
+		errorLogger:        deps.ErrorLogger,
 	}
 }
 
@@ -68,6 +74,11 @@ func (h *Handler) Routes() http.Handler {
 
 	// Swagger / OpenAPI 配信
 	registerDocsRoutes(mux)
+
+	// Logger middleware をグローバル適用
+	if h.accessLogger != nil && h.errorLogger != nil {
+		return Logger(h.accessLogger, h.errorLogger)(mux)
+	}
 
 	return mux
 }
