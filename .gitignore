@@ -2,7 +2,4 @@ bin/
 tmp/
 .DS_store
 .env
-subject.md
-proceed.md
-*-clean-arch.md
 logs/
