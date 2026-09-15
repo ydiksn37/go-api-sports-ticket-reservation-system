@@ -19,7 +19,7 @@ exec-app: ## appコンテナの中に入る (シェル)
 	docker compose exec app sh
 
 exec-db: ## dbコンテナの中に入る (psql)
-	docker compose exec db psql -U postgres -d road_to_dena
+	docker compose exec db psql -U yukusano -d road_to_dena
 
 clean: ## コンテナを停止する
 	docker compose down
