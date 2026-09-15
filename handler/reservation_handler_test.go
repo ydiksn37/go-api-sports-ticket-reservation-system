@@ -54,7 +54,7 @@ func TestCreateReservation_Handler_InvalidGameID(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
 
 	body := createReservationJSON("not-a-uuid", []map[string]interface{}{
-		{"seat_grade": "S指定席", "quantity": 2},
+		{"seat_grade": "SS", "quantity": 2},
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -88,7 +88,7 @@ func TestCreateReservation_Handler_InvalidQuantity(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
 
 	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
-		{"seat_grade": "S指定席", "quantity": 0}, // 0 は無効
+		{"seat_grade": "SS", "quantity": 0}, // 0 は無効
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -149,7 +149,7 @@ func TestCreateReservation_Handler_GameNotFound(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: ucMock})
 
 	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
-		{"seat_grade": "S指定席", "quantity": 1},
+		{"seat_grade": "SS", "quantity": 1},
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -172,7 +172,7 @@ func TestCreateReservation_Handler_InsufficientSeats(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: ucMock})
 
 	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
-		{"seat_grade": "S指定席", "quantity": 100},
+		{"seat_grade": "SS", "quantity": 100},
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -198,7 +198,7 @@ func TestCreateReservation_Handler_Success(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: ucMock})
 
 	body := createReservationJSON(gameID.String(), []map[string]interface{}{
-		{"seat_grade": "S指定席", "quantity": 2},
+		{"seat_grade": "SS", "quantity": 2},
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")

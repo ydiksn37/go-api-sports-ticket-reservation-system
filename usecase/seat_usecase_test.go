@@ -22,8 +22,8 @@ func TestListSeatAvailability_Success(t *testing.T) {
 	seatRepo := &repositorymock.SeatRepository{
 		FindAvailabilityByGameIDFn: func(_ context.Context, _ uuid.UUID) ([]*domain.SeatAvailability, error) {
 			return []*domain.SeatAvailability{
-				{SeatGrade: "S指定席", Price: 6800, TotalSeats: 10, AvailableSeats: 5, ReservedSeats: 2, SoldSeats: 3},
-				{SeatGrade: "A指定席", Price: 5500, TotalSeats: 20, AvailableSeats: 10, ReservedSeats: 2, SoldSeats: 8},
+				{SeatGrade: "SS", Price: 6800, TotalSeats: 10, AvailableSeats: 5, ReservedSeats: 2, SoldSeats: 3},
+				{SeatGrade: "S", Price: 5500, TotalSeats: 20, AvailableSeats: 10, ReservedSeats: 2, SoldSeats: 8},
 			}, nil
 		},
 	}

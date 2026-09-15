@@ -140,10 +140,10 @@ func seedTeams(tx *sqlx.Tx) ([]Team, error) {
 
 func seedSeats(tx *sqlx.Tx) ([]Seat, error) {
 	seats := []Seat{
-		{ID: uuid.New(), SeatGrade: "S指定席", Price: 6800, TotalSeats: 10},
-		{ID: uuid.New(), SeatGrade: "A指定席", Price: 5500, TotalSeats: 20},
-		{ID: uuid.New(), SeatGrade: "B指定席", Price: 4000, TotalSeats: 30},
-		{ID: uuid.New(), SeatGrade: "外野指定席", Price: 2500, TotalSeats: 40},
+		{ID: uuid.New(), SeatGrade: "SS", Price: 6800, TotalSeats: 10},
+		{ID: uuid.New(), SeatGrade: "S", Price: 5500, TotalSeats: 20},
+		{ID: uuid.New(), SeatGrade: "A", Price: 4000, TotalSeats: 30},
+		{ID: uuid.New(), SeatGrade: "B", Price: 2500, TotalSeats: 40},
 	}
 	for _, seat := range seats {
 		_, err := tx.NamedExec(`INSERT INTO seats (id, seat_grade, price, total_seats) VALUES (:id, :seat_grade, :price, :total_seats)`, seat)

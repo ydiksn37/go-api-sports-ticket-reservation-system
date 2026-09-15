@@ -52,10 +52,10 @@ func isValidPassword(password string) bool {
 
 // DB の seed データに対応した有効な座席グレードの一覧
 var validSeatGrades = map[string]bool{
-	"S指定席":  true,
-	"A指定席":  true,
-	"B指定席":  true,
-	"外野指定席": true,
+	"SS": true,
+	"S":  true,
+	"A":  true,
+	"B":  true,
 }
 
 // 座席グレードが有効な値かチェックする

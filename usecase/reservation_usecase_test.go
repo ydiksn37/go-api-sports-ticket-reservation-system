@@ -63,7 +63,7 @@ func TestCreateReservation_Success(t *testing.T) {
 	out, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: userID,
 		GameID: gameID,
-		Seats:  []usecase.SeatRequest{{SeatGrade: "S指定席", Quantity: 2}},
+		Seats:  []usecase.SeatRequest{{SeatGrade: "SS", Quantity: 2}},
 	})
 
 	if err != nil {
@@ -90,7 +90,7 @@ func TestCreateReservation_GameNotFound(t *testing.T) {
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
 		GameID: uuid.New(),
-		Seats:  []usecase.SeatRequest{{SeatGrade: "S指定席", Quantity: 1}},
+		Seats:  []usecase.SeatRequest{{SeatGrade: "SS", Quantity: 1}},
 	})
 
 	if !errors.Is(err, usecase.ErrGameNotFound) {
@@ -116,7 +116,7 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
 		GameID: uuid.New(),
-		Seats:  []usecase.SeatRequest{{SeatGrade: "S指定席", Quantity: 2}},
+		Seats:  []usecase.SeatRequest{{SeatGrade: "SS", Quantity: 2}},
 	})
 
 	if !errors.Is(err, usecase.ErrInsufficientSeats) {
@@ -142,7 +142,7 @@ func TestCreateReservation_TxError(t *testing.T) {
 	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: uuid.New(),
 		GameID: uuid.New(),
-		Seats:  []usecase.SeatRequest{{SeatGrade: "S指定席", Quantity: 1}},
+		Seats:  []usecase.SeatRequest{{SeatGrade: "SS", Quantity: 1}},
 	})
 
 	if !errors.Is(err, wantErr) {

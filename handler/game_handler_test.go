@@ -208,10 +208,10 @@ func TestListSeatAvailability_Handler_Success(t *testing.T) {
 		ListSeatAvailabilityFn: func(_ context.Context, _ usecase.ListSeatAvailabilityInput) (*usecase.ListSeatAvailabilityOutput, error) {
 			return &usecase.ListSeatAvailabilityOutput{
 				Seats: []*domain.SeatAvailability{
-					{SeatGrade: "S指定席", Price: 6800, TotalSeats: 10, AvailableSeats: 5},
-					{SeatGrade: "A指定席", Price: 5500, TotalSeats: 20, AvailableSeats: 10},
-					{SeatGrade: "B指定席", Price: 4000, TotalSeats: 30, AvailableSeats: 15},
-					{SeatGrade: "外野指定席", Price: 2500, TotalSeats: 40, AvailableSeats: 20},
+					{SeatGrade: "SS", Price: 6800, TotalSeats: 10, AvailableSeats: 5},
+					{SeatGrade: "S", Price: 5500, TotalSeats: 20, AvailableSeats: 10},
+					{SeatGrade: "A", Price: 4000, TotalSeats: 30, AvailableSeats: 15},
+					{SeatGrade: "B", Price: 2500, TotalSeats: 40, AvailableSeats: 20},
 				},
 			}, nil
 		},
