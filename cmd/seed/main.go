@@ -73,12 +73,12 @@ func runMigration() {
 	defer m.Close()
 	if err := m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			log.Println("database is already up to date.")
+			log.Println("database is already up to date")
 		} else {
 			log.Fatalf("migration execution failed: %v", err)
 		}
 	} else {
-		log.Println("migration completed successfully!")
+		log.Println("migration completed successfully")
 	}
 }
 
