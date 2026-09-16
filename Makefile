@@ -27,7 +27,7 @@ clean: ## コンテナを停止する
 fclean: ## コンテナとボリュームを完全に削除する
 	docker compose down -v --remove-orphans
 
-re: fclean up ## 完全削除から再起動し、Seedデータを投入する
+re: fclean up ## fclean -> up -> seed
 	@echo "Waiting for database to be ready..."
 	@sleep 5
 	@$(MAKE) seed
