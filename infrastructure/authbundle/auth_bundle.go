@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	// "database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	// "github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -61,89 +59,6 @@ type AuthConfig struct {
 	CookieDomain string
 	CookieSecure bool
 }
-
-/*
-// ============================================================================
-// RefreshTokenStore - authbundle 提供の DB アクセス実装（現在はリポジトリ層の実装を使用しているため未使用）
-// domain.RefreshTokenRepository インターフェースを満たす
-// ============================================================================
-
-type RefreshTokenStore struct {
-	db *sqlx.DB
-}
-
-// RefreshTokenStore のコンストラクタ
-func NewRefreshTokenStore(db *sqlx.DB) *RefreshTokenStore {
-	return &RefreshTokenStore{db: db}
-}
-
-// リフレッシュトークンを DB に保存
-func (st *RefreshTokenStore) Create(ctx context.Context, token *domain.RefreshToken) error {
-	query := `
-		INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`
-	_, err := st.db.ExecContext(ctx, query,
-		token.ID,
-		token.UserID,
-		token.TokenHash,
-		token.ExpiresAt,
-		token.CreatedAt,
-		token.UpdatedAt,
-	)
-	return err
-}
-
-// ハッシュ値でリフレッシュトークンを取得
-func (st *RefreshTokenStore) GetByTokenHash(ctx context.Context, tokenHash string) (*domain.RefreshToken, error) {
-	var token domain.RefreshToken
-	query := `
-		SELECT id, user_id, token_hash, expires_at, revoked_at, created_at, updated_at, deleted_at
-		FROM refresh_tokens
-		WHERE token_hash = $1
-			AND deleted_at IS NULL
-			AND revoked_at IS NULL
-			AND expires_at > NOW()
-	`
-	err := st.db.GetContext(ctx, &token, query, tokenHash)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &token, nil
-}
-
-// ハッシュ値でリフレッシュトークンを失効させる
-func (st *RefreshTokenStore) RevokeByTokenHash(ctx context.Context, tokenHash string) error {
-	query := `
-		UPDATE refresh_tokens
-		SET revoked_at = NOW(), updated_at = NOW()
-		WHERE token_hash = $1
-			AND deleted_at IS NULL
-			AND revoked_at IS NULL
-	`
-	_, err := st.db.ExecContext(ctx, query, tokenHash)
-	return err
-}
-
-// ユーザー ID に紐づく全リフレッシュトークンを失効させる
-func (st *RefreshTokenStore) RevokeByUserID(ctx context.Context, userID uuid.UUID) error {
-	query := `
-		UPDATE refresh_tokens
-		SET revoked_at = NOW(), updated_at = NOW()
-		WHERE user_id = $1
-			AND deleted_at IS NULL
-			AND revoked_at IS NULL
-	`
-	_, err := st.db.ExecContext(ctx, query, userID)
-	return err
-}
-
-// コンパイル時に domain.RefreshTokenRepository インターフェースを満たしているか検証
-var _ domain.RefreshTokenRepository = (*RefreshTokenStore)(nil)
-*/
 
 // ============================================================================
 // AuthBundle - 認証サービスの統括構造体
