@@ -34,7 +34,7 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database")
 
-	// 依存関係の組み立て（Composition Root）
+	// 依存関係の組み立て
 	// Infrastructure 層
 	// authbundle の設定
 	authCfg := &authbundle.AuthConfig{
