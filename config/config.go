@@ -56,7 +56,7 @@ func Load() (*Config, error) {
 			AccessTTL:    15 * time.Minute,
 			RefreshTTL:   7 * 24 * time.Hour, // 7日間
 			CookieDomain: getEnv("COOKIE_DOMAIN", ""),
-			CookieSecure: false, // ローカル開発では false
+			CookieSecure: false, // ローカル開発 http のため false
 		},
 	}
 
