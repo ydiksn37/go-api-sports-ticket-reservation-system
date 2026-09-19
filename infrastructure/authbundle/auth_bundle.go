@@ -23,11 +23,6 @@ var (
 	ErrInternal     = errors.New("internal server error")
 )
 
-// ============================================================================
-// 認証機能統合ファイル
-// 認証サービス（JWT・パスワード）に特化した機能を提供する
-// ============================================================================
-
 // リクエスト/レスポンス型
 type AuthLoginRequest struct {
 	Email    string `json:"email"`
@@ -60,10 +55,6 @@ type AuthConfig struct {
 	CookieSecure bool
 }
 
-// ============================================================================
-// AuthBundle - 認証サービスの統括構造体
-// ============================================================================
-
 type AuthBundle struct {
 	cfg               *AuthConfig
 	refreshTokenStore domain.RefreshTokenRepository // インターフェースに依存（DIP 適用）
@@ -76,10 +67,6 @@ func NewAuthBundle(cfg *AuthConfig, refreshTokenStore domain.RefreshTokenReposit
 		refreshTokenStore: refreshTokenStore,
 	}
 }
-
-// ============================================================================
-// JWT（アクセストークン）
-// ============================================================================
 
 // JWT のクレーム定義
 type AuthClaims struct {
@@ -151,10 +138,6 @@ func (a *AuthBundle) ValidateAccessToken(tokenString string) (*AuthClaims, error
 
 	return claims, nil
 }
-
-// ============================================================================
-// リフレッシュトークン
-// ============================================================================
 
 // リフレッシュトークンを生成し DB に保存する
 func (a *AuthBundle) GenerateRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
@@ -234,10 +217,6 @@ func (a *AuthBundle) RotateRefreshToken(ctx context.Context, oldTokenString stri
 	return newToken, nil
 }
 
-// ============================================================================
-// パスワード（純粋関数）
-// ============================================================================
-
 // パスワードを bcrypt でハッシュ化する
 func HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -252,11 +231,6 @@ func CheckPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
-
-// ============================================================================
-// PasswordHasherImpl - domain.PasswordHasher インターフェースの実装
-// usecase 層は domain.PasswordHasher インターフェース越しに DI される
-// ============================================================================
 
 // domain.PasswordHasher の infrastructure/authbundle 実装
 type PasswordHasherImpl struct{}
