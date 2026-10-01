@@ -12,7 +12,7 @@ erDiagram
 
     seats ||--o{ tickets : "1つの座席グレードは<br>複数のチケットに<br>紐づく<br>---<br>1つのチケットは<br>絶対に1つの<br>座席グレードに<br>属する"
 
-    reservations |o--o{ tickets : "1つの予約は<br>複数のチケットを<br>確保する<br>---<br>1つのチケットは<br>1つの予約に属する<br>もしくはまだ誰にも<br>予約されていない<br>(NULL許容)"
+    reservations |o--o{ tickets : "1つの予約は<br>0枚以上のチケットが<br>関連付けられる<br>---<br>1つのチケットは<br>1つの予約に属する<br>もしくはまだ誰にも<br>予約されていない<br>(NULL許容)"
 
     users {
         uuid id PK
@@ -38,7 +38,7 @@ erDiagram
 
     seats {
         uuid id PK
-        string seat_grade "VIP, S, Aなど"
+        string seat_grade "SS, S, Aなど"
         integer price "価格"
         integer total_seats "総座席数"
     }
