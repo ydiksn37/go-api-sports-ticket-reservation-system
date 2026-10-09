@@ -35,6 +35,7 @@ func TestCreateReservation_Success(t *testing.T) {
 	gameID := uuid.New()
 	userID := uuid.New()
 	ticketID := uuid.New()
+	tx := &repositorymock.TxContext{}
 
 	gameRepo := &repositorymock.GameRepository{
 		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
@@ -42,7 +43,10 @@ func TestCreateReservation_Success(t *testing.T) {
 		},
 	}
 	ticketRepo := &repositorymock.TicketRepository{
-		LockAvailableFn: func(_ context.Context, _ domain.TxContext, gID uuid.UUID, qty int) ([]*domain.Ticket, error) {
+		LockAvailableFn: func(_ context.Context, gotTx domain.TxContext, gID uuid.UUID, qty int) ([]*domain.Ticket, error) {
+			if gotTx != tx {
+				t.Errorf("LockAvailable: want same transaction, got: %T", gotTx)
+			}
 			// qty 枚分のチケットを返す
 			tickets := make([]*domain.Ticket, qty)
 			for i := range tickets {
@@ -50,15 +54,28 @@ func TestCreateReservation_Success(t *testing.T) {
 			}
 			return tickets, nil
 		},
-		BulkReserveFn: func(_ context.Context, _ domain.TxContext, _ []uuid.UUID, _ uuid.UUID) error {
+		BulkReserveFn: func(_ context.Context, gotTx domain.TxContext, _ []uuid.UUID, _ uuid.UUID) error {
+			if gotTx != tx {
+				t.Errorf("BulkReserve: want same transaction, got: %T", gotTx)
+			}
 			return nil
 		},
 	}
 	reservationRepo := &repositorymock.ReservationRepository{
-		CreateFn: func(_ context.Context, _ *domain.Reservation) error { return nil },
+		CreateFn: func(_ context.Context, gotTx domain.TxContext, _ *domain.Reservation) error {
+			if gotTx != tx {
+				t.Errorf("Create: want same transaction, got: %T", gotTx)
+			}
+			return nil
+		},
 	}
 
-	uc := newReservationUseCase(reservationRepo, ticketRepo, gameRepo, &repositorymock.TxManager{})
+	txManager := &repositorymock.TxManager{
+		RunInTxFn: func(ctx context.Context, fn func(domain.TxContext) error) error {
+			return fn(tx)
+		},
+	}
+	uc := newReservationUseCase(reservationRepo, ticketRepo, gameRepo, txManager)
 
 	out, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
 		UserID: userID,
@@ -121,6 +138,42 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 
 	if !errors.Is(err, usecase.ErrInsufficientSeats) {
 		t.Errorf("want: ErrInsufficientSeats, got: %v", err)
+	}
+}
+
+func TestCreateReservation_BulkReserveError(t *testing.T) {
+	wantErr := errors.New("bulk reserve error")
+	gameID := uuid.New()
+
+	gameRepo := &repositorymock.GameRepository{
+		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
+			return repositorymock.NewGame(id), nil
+		},
+	}
+	ticketRepo := &repositorymock.TicketRepository{
+		LockAvailableFn: func(_ context.Context, _ domain.TxContext, gID uuid.UUID, _ int) ([]*domain.Ticket, error) {
+			return []*domain.Ticket{repositorymock.NewTicket(uuid.New(), gID, 5000)}, nil
+		},
+		BulkReserveFn: func(_ context.Context, _ domain.TxContext, _ []uuid.UUID, _ uuid.UUID) error {
+			return wantErr
+		},
+	}
+
+	uc := newReservationUseCase(
+		&repositorymock.ReservationRepository{},
+		ticketRepo,
+		gameRepo,
+		&repositorymock.TxManager{},
+	)
+
+	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
+		UserID: uuid.New(),
+		GameID: gameID,
+		Seats:  []usecase.SeatRequest{{SeatGrade: "SS", Quantity: 1}},
+	})
+
+	if !errors.Is(err, wantErr) {
+		t.Errorf("want: BulkReserve error, got: %v", err)
 	}
 }
 

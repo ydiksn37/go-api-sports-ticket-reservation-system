@@ -104,7 +104,7 @@ var _ domain.SeatRepository = (*SeatRepository)(nil)
 
 // domain.ReservationRepository の仮実装
 type ReservationRepository struct {
-	CreateFn                  func(ctx context.Context, r *domain.Reservation) error
+	CreateFn                  func(ctx context.Context, tx domain.TxContext, r *domain.Reservation) error
 	FindByIDFn                func(ctx context.Context, id uuid.UUID) (*domain.Reservation, error)
 	FindByUserIDWithTicketsFn func(ctx context.Context, userID uuid.UUID) ([]*domain.Reservation, error)
 	FindByIDWithTicketsFn     func(ctx context.Context, id uuid.UUID) (*domain.Reservation, error)
@@ -112,9 +112,9 @@ type ReservationRepository struct {
 	UpdateStatusFn            func(ctx context.Context, tx domain.TxContext, id uuid.UUID, status string) error
 }
 
-func (m *ReservationRepository) Create(ctx context.Context, r *domain.Reservation) error {
+func (m *ReservationRepository) Create(ctx context.Context, tx domain.TxContext, r *domain.Reservation) error {
 	if m.CreateFn != nil {
-		return m.CreateFn(ctx, r)
+		return m.CreateFn(ctx, tx, r)
 	}
 	return nil
 }

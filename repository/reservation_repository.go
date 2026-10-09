@@ -111,7 +111,7 @@ func groupReservationsWithTickets(rows []reservationWithTicketRow) []*domain.Res
 
 const createReservationQuery = `
 	INSERT INTO reservations (id, user_id, game_id, status, expires_at, created_at, updated_at)
-	VALUES (:id, :user_id, :game_id, :status, :expires_at, :created_at, :updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 const findReservationByIDQuery = `
@@ -167,17 +167,18 @@ const updateReservationStatusQuery = `
 `
 
 // 予約を新規作成する
-func (r *reservationRepository) Create(ctx context.Context, res *domain.Reservation) error {
-	params := map[string]interface{}{
-		"id":         res.ID,
-		"user_id":    res.UserID,
-		"game_id":    res.GameID,
-		"status":     res.Status,
-		"expires_at": res.ExpiresAt,
-		"created_at": res.CreatedAt,
-		"updated_at": res.UpdatedAt,
-	}
-	if _, err := r.db.NamedExecContext(ctx, createReservationQuery, params); err != nil {
+func (r *reservationRepository) Create(ctx context.Context, tx domain.TxContext, res *domain.Reservation) error {
+	if _, err := tx.ExecContext(
+		ctx,
+		createReservationQuery,
+		res.ID,
+		res.UserID,
+		res.GameID,
+		res.Status,
+		res.ExpiresAt,
+		res.CreatedAt,
+		res.UpdatedAt,
+	); err != nil {
 		return fmt.Errorf("reservationRepository.Create: %w", err)
 	}
 	return nil

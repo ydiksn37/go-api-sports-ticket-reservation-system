@@ -36,7 +36,7 @@ type Ticket struct {
 // 予約の DB 操作に関するインターフェース
 type ReservationRepository interface {
 	// 予約を新規作成する
-	Create(ctx context.Context, r *Reservation) error
+	Create(ctx context.Context, tx TxContext, r *Reservation) error
 	// 指定 ID の予約を取得する
 	FindByID(ctx context.Context, id uuid.UUID) (*Reservation, error)
 	// 指定ユーザーの予約一覧をチケット情報付きで取得する

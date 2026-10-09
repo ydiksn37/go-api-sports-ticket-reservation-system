@@ -180,7 +180,7 @@ func (u *reservationUseCase) CreateReservation(ctx context.Context, input Create
 		}
 
 		// Reservation を DB に保存
-		if err := u.reservationRepo.Create(ctx, res); err != nil {
+		if err := u.reservationRepo.Create(ctx, tx, res); err != nil {
 			return fmt.Errorf("reservationRepo.Create: %w", err)
 		}
 
