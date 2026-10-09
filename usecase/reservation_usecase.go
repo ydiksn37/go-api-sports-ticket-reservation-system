@@ -15,6 +15,8 @@ import (
 // ============================================================
 
 var (
+	// 同じ座席グレードが複数指定された場合のエラー
+	ErrDuplicateSeatGrade = errors.New("duplicate seat grade")
 	// 指定グレードの空き座席が不足している場合のエラー
 	ErrInsufficientSeats = errors.New("insufficient available seats")
 	// 予約が見つからない場合のエラー
@@ -139,6 +141,16 @@ func NewReservationUseCase(
 
 // 予約作成のビジネスロジック
 func (u *reservationUseCase) CreateReservation(ctx context.Context, input CreateReservationInput) (*CreateReservationOutput, error) {
+	// 同じグレードを複数回処理すると、同一トランザクション内で同じチケットを
+	// 再取得できてしまうため、DB 操作を始める前に拒否する
+	seenSeatGrades := make(map[string]struct{}, len(input.Seats))
+	for _, seat := range input.Seats {
+		if _, exists := seenSeatGrades[seat.SeatGrade]; exists {
+			return nil, ErrDuplicateSeatGrade
+		}
+		seenSeatGrades[seat.SeatGrade] = struct{}{}
+	}
+
 	// ゲーム存在確認
 	game, err := u.gameRepo.FindByID(ctx, input.GameID)
 	if err != nil {

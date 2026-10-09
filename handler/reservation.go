@@ -134,6 +134,8 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		switch {
+		case errors.Is(err, usecase.ErrDuplicateSeatGrade):
+			h.respondError(w, err, http.StatusBadRequest) // 400
 		case errors.Is(err, usecase.ErrGameNotFound):
 			h.respondError(w, err, http.StatusNotFound) // 404
 		case errors.Is(err, usecase.ErrInsufficientSeats):

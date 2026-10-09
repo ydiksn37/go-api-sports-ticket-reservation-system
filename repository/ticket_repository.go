@@ -70,7 +70,7 @@ const lockAvailableTicketsQuery = `
 		AND t.status = 'available'
 	ORDER BY t.id
 	LIMIT $3
-	FOR UPDATE SKIP LOCKED
+	FOR UPDATE OF t SKIP LOCKED
 `
 
 // チケットのステータスを一括更新する

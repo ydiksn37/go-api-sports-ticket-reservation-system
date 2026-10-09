@@ -141,6 +141,50 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 	}
 }
 
+func TestCreateReservation_DuplicateSeatGrade(t *testing.T) {
+	gameRepoCalled := false
+	txManagerCalled := false
+
+	gameRepo := &repositorymock.GameRepository{
+		FindByIDFn: func(_ context.Context, id uuid.UUID) (*domain.Game, error) {
+			gameRepoCalled = true
+			return repositorymock.NewGame(id), nil
+		},
+	}
+	txManager := &repositorymock.TxManager{
+		RunInTxFn: func(_ context.Context, _ func(domain.TxContext) error) error {
+			txManagerCalled = true
+			return nil
+		},
+	}
+
+	uc := newReservationUseCase(
+		&repositorymock.ReservationRepository{},
+		&repositorymock.TicketRepository{},
+		gameRepo,
+		txManager,
+	)
+
+	_, err := uc.CreateReservation(context.Background(), usecase.CreateReservationInput{
+		UserID: uuid.New(),
+		GameID: uuid.New(),
+		Seats: []usecase.SeatRequest{
+			{SeatGrade: "S", Quantity: 2},
+			{SeatGrade: "S", Quantity: 1},
+		},
+	})
+
+	if !errors.Is(err, usecase.ErrDuplicateSeatGrade) {
+		t.Errorf("want: ErrDuplicateSeatGrade, got: %v", err)
+	}
+	if gameRepoCalled {
+		t.Error("game repository must not be called for duplicate seat grades")
+	}
+	if txManagerCalled {
+		t.Error("transaction must not start for duplicate seat grades")
+	}
+}
+
 func TestCreateReservation_BulkReserveError(t *testing.T) {
 	wantErr := errors.New("bulk reserve error")
 	gameID := uuid.New()

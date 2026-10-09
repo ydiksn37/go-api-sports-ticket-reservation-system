@@ -162,6 +162,37 @@ func TestCreateReservation_Handler_GameNotFound(t *testing.T) {
 	}
 }
 
+func TestCreateReservation_Handler_DuplicateSeatGrade(t *testing.T) {
+	userID := uuid.New()
+	ucMock := &handlermock.ReservationUseCase{
+		CreateReservationFn: func(_ context.Context, _ usecase.CreateReservationInput) (*usecase.CreateReservationOutput, error) {
+			return nil, usecase.ErrDuplicateSeatGrade
+		},
+	}
+	h := newTestHandler(Deps{ReservationUseCase: ucMock})
+
+	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
+		{"seat_grade": "S", "quantity": 2},
+		{"seat_grade": "S", "quantity": 1},
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
+	req.Header.Set("Content-Type", "application/json")
+	req = withUserID(req, userID)
+	rec := httptest.NewRecorder()
+	h.CreateReservation(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("want: 400, got: %d", rec.Code)
+	}
+	var response map[string]string
+	if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if response["error"] != usecase.ErrDuplicateSeatGrade.Error() {
+		t.Errorf("want error: %q, got: %q", usecase.ErrDuplicateSeatGrade, response["error"])
+	}
+}
+
 func TestCreateReservation_Handler_InsufficientSeats(t *testing.T) {
 	userID := uuid.New()
 	ucMock := &handlermock.ReservationUseCase{
