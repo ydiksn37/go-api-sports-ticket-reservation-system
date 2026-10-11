@@ -9,6 +9,8 @@ up: ## コンテナを起動する
 seed: ## Seedデータを投入する
 	docker compose exec app go run cmd/seed/main.go
 
+initialize: up seed # up と seed を実行する
+
 test: ## ユニットテストを実行する
 	go test -v ./...
 
@@ -33,4 +35,4 @@ re: fclean up ## fclean -> up -> seed
 	@$(MAKE) seed
 	@echo "Re-initialization complete"
 
-.PHONY: help up clean fclean re seed test logs exec-app exec-db
+.PHONY: help up clean fclean re seed test logs exec-app exec-db initialize
