@@ -80,6 +80,7 @@ const bulkReserveTicketsQuery = `
 			reservation_id = $1,
 			updated_at = NOW()
 	WHERE id = ANY($2)
+		AND status = 'available'
 `
 
 // 予約に紐づくチケット一覧を取得する
@@ -136,8 +137,20 @@ func (r *ticketRepository) BulkReserve(ctx context.Context, tx domain.TxContext,
 		ids[i] = id.String()
 	}
 	// トランザクション内で呼び出す
-	if _, err := tx.ExecContext(ctx, bulkReserveTicketsQuery, reservationID, pq.Array(ids)); err != nil {
+	result, err := tx.ExecContext(ctx, bulkReserveTicketsQuery, reservationID, pq.Array(ids))
+	if err != nil {
 		return fmt.Errorf("ticketRepository.BulkReserve: %w", err)
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("ticketRepository.BulkReserve: rows affected: %w", err)
+	}
+	if affected != int64(len(ticketIDs)) {
+		return fmt.Errorf(
+			"ticketRepository.BulkReserve: updated ticket count mismatch: expected=%d actual=%d",
+			len(ticketIDs),
+			affected,
+		)
 	}
 	return nil
 }
