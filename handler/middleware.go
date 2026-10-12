@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+type requestLogState struct {
+	userID string
+}
+
+type requestLogStateKey struct{}
+
 // アクセストークンを検証し、context に userID を注入する
 func (h *Handler) AuthRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +38,9 @@ func (h *Handler) AuthRequired(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), userIDKey, claims.UserID)
+		if state, ok := r.Context().Value(requestLogStateKey{}).(*requestLogState); ok {
+			state.userID = claims.UserID.String()
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -84,6 +93,9 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			state := &requestLogState{}
+			r = r.WithContext(context.WithValue(r.Context(), requestLogStateKey{}, state))
+
 			// リクエスト Body を読み取る（最大 1KB に制限して大量データを避ける）
 			bodyBytes, _ := io.ReadAll(io.LimitReader(r.Body, 1024))
 			// 後続 handler が読み直せるように復元
@@ -96,8 +108,8 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 			// 後続の handler を実行
 			next.ServeHTTP(rw, r)
 
-			// ユーザーID を context から取得
-			userID := getUserIDStr(r)
+			// 認証時に共有されたユーザー ID を取得
+			userID := getUserIDStr(state)
 
 			// アクセスログ: 全リクエストを記録
 			accessLog.Printf("[ACCESS] method=%s url=%s ip=%s user_id=%s status=%d body=%s",
@@ -112,12 +124,10 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 	}
 }
 
-// context からユーザーID を取得して文字列で返す
-func getUserIDStr(r *http.Request) string {
-	id, ok := getUserIDFromContext(r.Context())
-	// 未認証リクエストや context にユーザーID がない場合は "-" を返す
-	if !ok {
+// 未認証リクエストでは "-" を返す
+func getUserIDStr(state *requestLogState) string {
+	if state.userID == "" {
 		return "-"
 	}
-	return id.String()
+	return state.userID
 }
