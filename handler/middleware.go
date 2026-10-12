@@ -73,13 +73,11 @@ func newResponseWriter(w http.ResponseWriter) *responseWriter {
 	return &responseWriter{ResponseWriter: w, status: http.StatusOK}
 }
 
-// ステータスコードをキャプチャしてから実際の ResponseWriter に委譲する
 func (rw *responseWriter) WriteHeader(status int) {
 	rw.status = status
 	rw.ResponseWriter.WriteHeader(status)
 }
 
-// 4xx/5xx のとき errBody にもコピーして保存する
 func (rw *responseWriter) Write(b []byte) (int, error) {
 	if rw.status >= 400 {
 		rw.errBody.Write(b)
@@ -87,26 +85,21 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return rw.ResponseWriter.Write(b)
 }
 
-// すべてのリクエストをアクセスログに記録し、4xx/5xx のリクエストをエラーログにも記録する Middleware を返す
 func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			state := &requestLogState{}
 			r = r.WithContext(context.WithValue(r.Context(), requestLogStateKey{}, state))
 
-			// リクエスト Body を読み取る
 			bodyBytes, _ := io.ReadAll(io.LimitReader(r.Body, 1024))
-			// 後続 handler が読み直せるように復元
 			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 			bodyStr := strings.TrimSpace(string(bodyBytes))
 			if r.Method == http.MethodPost && r.URL.Path == "/api/user/signup" {
 				bodyStr = "-"
 			}
 
-			// ResponseWriter をラップ
 			rw := newResponseWriter(w)
 
-			// 後続の handler を実行
 			next.ServeHTTP(rw, r)
 
 			userID := getUserIDStr(state)
