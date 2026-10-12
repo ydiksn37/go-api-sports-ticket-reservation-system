@@ -8,7 +8,6 @@ import (
 )
 
 // リフレッシュトークンのドメインエンティティ
-// DB の refresh_tokens テーブルと1対1で対応
 type RefreshToken struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID

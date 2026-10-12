@@ -8,7 +8,6 @@ import (
 )
 
 // システムのユーザーエンティティ
-// DB の users テーブルと1対1で対応
 type User struct {
 	ID           uuid.UUID
 	Username     string

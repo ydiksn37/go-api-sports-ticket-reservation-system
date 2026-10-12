@@ -164,7 +164,6 @@ func seedGames(tx *sqlx.Tx, teams []Team) ([]Game, error) {
 		// ランダムにホームとアウェイを決定
 		homeIdx := rand.IntN(len(teams))
 		awayIdx := rand.IntN(len(teams))
-		// ホームとアウェイが同じチームにならないように再抽選
 		for homeIdx == awayIdx {
 			awayIdx = rand.IntN(len(teams))
 		}
@@ -177,7 +176,7 @@ func seedGames(tx *sqlx.Tx, teams []Team) ([]Game, error) {
 			ID:         uuid.New(),
 			HomeTeamID: teams[homeIdx].ID,
 			AwayTeamID: teams[awayIdx].ID,
-			GameDate:   time.Date(gameDate.Year(), gameDate.Month(), gameDate.Day(), 0, 0, 0, 0, loc), // 時刻を切り捨てた日付のみ
+			GameDate:   time.Date(gameDate.Year(), gameDate.Month(), gameDate.Day(), 0, 0, 0, 0, loc),
 			StartTime:  startTime,
 		}
 		_, err := tx.NamedExec(`INSERT INTO games (id, home_team_id, away_team_id, game_date, start_time) VALUES (:id, :home_team_id, :away_team_id, :game_date, :start_time)`, game)

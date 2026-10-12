@@ -21,13 +21,10 @@ type ServerConfig struct {
 
 // データベース接続に関する設定
 type DatabaseConfig struct {
-	// URL は環境変数から読み込む
 	URL string
 }
 
 // JWT 認証に関する設定
-// authbundle.AuthConfig と同じフィールドを持つ
-// config パッケージを authbundle に依存させないために独立した型として定義
 type AuthConfig struct {
 	JWTSecret    string
 	JWTIssuer    string

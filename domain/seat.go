@@ -18,6 +18,5 @@ type SeatAvailability struct {
 
 // 座席情報の DB 操作に関するインターフェース
 type SeatRepository interface {
-	// 指定試合の座席空き状況をグレード別に取得する
 	FindAvailabilityByGameID(ctx context.Context, gameID uuid.UUID) ([]*SeatAvailability, error)
 }

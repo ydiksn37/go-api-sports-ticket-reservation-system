@@ -36,7 +36,6 @@ func main() {
 
 	// 依存関係の組み立て
 	// Infrastructure 層
-	// authbundle の設定
 	authCfg := &authbundle.AuthConfig{
 		JWTSecret:    cfg.Auth.JWTSecret,
 		JWTIssuer:    cfg.Auth.JWTIssuer,
@@ -46,7 +45,6 @@ func main() {
 		CookieDomain: cfg.Auth.CookieDomain,
 		CookieSecure: cfg.Auth.CookieSecure,
 	}
-	// Repository 層の実装を使用（domain.RefreshTokenRepository インターフェース経由で DI）
 	refreshTokenRepo := repository.NewRefreshTokenRepository(db)
 	authBundle := authbundle.NewAuthBundle(authCfg, refreshTokenRepo)
 	passwordHasher := authbundle.NewPasswordHasher()
