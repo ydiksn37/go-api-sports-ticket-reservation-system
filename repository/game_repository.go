@@ -22,7 +22,6 @@ func NewGameRepository(db *sqlx.DB) domain.GameRepository {
 }
 
 // 中間構造体
-// sqlx は自動マッピングができないため
 type gameRow struct {
 	ID           uuid.UUID `db:"id"`
 	HomeTeamID   uuid.UUID `db:"home_team_id"`
@@ -52,12 +51,8 @@ func toGameDomain(row gameRow) *domain.Game {
 	}
 }
 
-// ============================================================
-// Query 定数
-// ============================================================
 
-// teams テーブルを 2回 JOIN して games テーブルに必要なホーム/アウェイチーム名を一括取得
-// n + 1 問題を防ぐため、単一 Query でチーム情報まで取得する
+// Query 定数
 const findAllGamesQuery = `
 	SELECT
 		g.id,
@@ -102,7 +97,6 @@ func (r *gameRepository) FindAll(ctx context.Context) ([]*domain.Game, error) {
 }
 
 // 指定 ID の試合を取得する
-// 存在しない場合は nil, nil を返す
 func (r *gameRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Game, error) {
 	var row gameRow
 	if err := r.db.GetContext(ctx, &row, findGameByIDQuery, id); err != nil {

@@ -19,7 +19,6 @@ func NewTxManager(db *sqlx.DB) domain.TxManager {
 }
 
 // トランザクション内で fn を実行する
-// fn がエラーを返した場合は自動ロールバック、成功時は自動コミットを行う
 func (m *txManager) RunInTx(ctx context.Context, fn func(tx domain.TxContext) error) error {
 	tx, err := m.db.BeginTxx(ctx, nil)
 	if err != nil {

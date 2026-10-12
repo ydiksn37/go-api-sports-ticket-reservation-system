@@ -22,7 +22,6 @@ func NewReservationRepository(db *sqlx.DB) domain.ReservationRepository {
 }
 
 // 中間構造体
-// sqlx は自動マッピングができないため
 type reservationRow struct {
 	ID        uuid.UUID `db:"id"`
 	UserID    uuid.UUID `db:"user_id"`
@@ -66,7 +65,7 @@ func toReservationDomain(row reservationRow) *domain.Reservation {
 	}
 }
 
-// フラット行スライスを Reservation + Tickets スライスにグループ化するヘルパー
+// Reservation + Tickets スライスにグループ化するヘルパー
 func groupReservationsWithTickets(rows []reservationWithTicketRow) []*domain.Reservation {
 	resMap := make(map[uuid.UUID]*domain.Reservation)
 	var result []*domain.Reservation
@@ -85,7 +84,6 @@ func groupReservationsWithTickets(rows []reservationWithTicketRow) []*domain.Res
 				Tickets:   make([]*domain.Ticket, 0),
 			}
 			resMap[row.ID] = res
-			// ORDER BY r.created_at DESC, t.id の順序を保持する
 			result = append(result, res)
 		}
 		// チケットが存在する場合のみ追加（LEFT JOIN で NULL になる場合は除外）
@@ -105,10 +103,7 @@ func groupReservationsWithTickets(rows []reservationWithTicketRow) []*domain.Res
 	return result
 }
 
-// ============================================================
 // Query 定数
-// ============================================================
-
 const createReservationQuery = `
 	INSERT INTO reservations (id, user_id, game_id, status, expires_at, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -185,7 +180,6 @@ func (r *reservationRepository) Create(ctx context.Context, tx domain.TxContext,
 }
 
 // 指定 ID の予約を取得する
-// 存在しない場合は nil, nil を返す
 func (r *reservationRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Reservation, error) {
 	var row reservationRow
 	if err := r.db.GetContext(ctx, &row, findReservationByIDQuery, id); err != nil {
@@ -207,7 +201,6 @@ func (r *reservationRepository) FindByUserIDWithTickets(ctx context.Context, use
 }
 
 // 指定 ID の予約をチケット情報付きで取得する
-// 存在しない場合は nil, nil を返す
 func (r *reservationRepository) FindByIDWithTickets(ctx context.Context, id uuid.UUID) (*domain.Reservation, error) {
 	var rows []reservationWithTicketRow
 	if err := r.db.SelectContext(ctx, &rows, findReservationByIDWithTicketsQuery, id); err != nil {

@@ -57,7 +57,7 @@ type AuthConfig struct {
 
 type AuthBundle struct {
 	cfg               *AuthConfig
-	refreshTokenStore domain.RefreshTokenRepository // インターフェースに依存（DIP 適用）
+	refreshTokenStore domain.RefreshTokenRepository
 }
 
 // AuthBundle のコンストラクタ

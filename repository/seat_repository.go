@@ -20,7 +20,6 @@ func NewSeatRepository(db *sqlx.DB) domain.SeatRepository {
 }
 
 // 中間構造体
-// sqlx は自動マッピングができないため
 type seatAvailabilityRow struct {
 	SeatGrade      string `db:"seat_grade"`
 	Price          int    `db:"price"`
@@ -42,11 +41,7 @@ func toSeatDomain(row seatAvailabilityRow) *domain.SeatAvailability {
 	}
 }
 
-// ============================================================
 // Query 定数
-// ============================================================
-
-// n + 1 問題を防ぐため、seats と tickets を JOIN + GROUP BY で一発集計する
 const findAvailabilityByGameIDQuery = `
 	SELECT
 		s.seat_grade,

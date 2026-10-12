@@ -21,7 +21,7 @@ func NewRefreshTokenRepository(db *sqlx.DB) domain.RefreshTokenRepository {
 	return &refreshTokenRepository{db: db}
 }
 
-// DB から取得したデータをマッピングするための構造体
+// 中間構造体
 type refreshTokenRow struct {
 	ID        uuid.UUID  `db:"id"`
 	UserID    uuid.UUID  `db:"user_id"`
