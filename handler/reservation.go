@@ -12,7 +12,6 @@ import (
 )
 
 // レスポンス用 DTO
-// docs/openapi.yaml の TicketResponse / ReservationResponse スキーマに対応
 type ticketResponse struct {
 	ID        uuid.UUID `json:"id"`
 	SeatID    uuid.UUID `json:"seat_id"`
@@ -61,7 +60,6 @@ func toReservationResponse(r *domain.Reservation) reservationResponse {
 }
 
 // リクエスト用 DTO
-// docs/openapi.yaml の CreateReservationRequest スキーマに対応
 type seatRequestBody struct {
 	SeatGrade string `json:"seat_grade"`
 	Quantity  int    `json:"quantity"`
@@ -73,9 +71,7 @@ type createReservationRequestBody struct {
 }
 
 // POST /api/reservations のハンドラー
-// 認証済み（AuthRequired ミドルウェアで認証）ユーザーの予約を作成
 func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
-	// 認証済みユーザー ID の取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
@@ -151,9 +147,7 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /api/reservations のハンドラー
-// 認証済みユーザーの予約一覧を取得
 func (h *Handler) ListReservations(w http.ResponseWriter, r *http.Request) {
-	// 認証済みユーザー ID の取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
@@ -178,16 +172,13 @@ func (h *Handler) ListReservations(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /api/reservations/{id} のハンドラー
-// 認証済みユーザーの予約詳細を取得
 func (h *Handler) GetReservation(w http.ResponseWriter, r *http.Request) {
-	// 認証済みユーザー ID の取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
 		return
 	}
 
-	// パスパラメータから予約 ID を取得
 	idStr := r.PathValue("id")
 	reservationID, err := uuid.Parse(idStr)
 	if err != nil {
@@ -217,16 +208,13 @@ func (h *Handler) GetReservation(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /api/reservations/{id}/purchase のハンドラー
-// 認証済みユーザーが仮押さえした予約を確定（決済処理）する
 func (h *Handler) PurchaseReservation(w http.ResponseWriter, r *http.Request) {
-	// 認証済みユーザー ID の取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
 		return
 	}
 
-	// パスパラメータから予約 ID を取得
 	idStr := r.PathValue("id")
 	reservationID, err := uuid.Parse(idStr)
 	if err != nil {
@@ -259,16 +247,13 @@ func (h *Handler) PurchaseReservation(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /api/reservations/{id} のハンドラー
-// 認証済みユーザーが仮押さえ中の予約をキャンセルする
 func (h *Handler) CancelReservation(w http.ResponseWriter, r *http.Request) {
-	// 認証済みユーザー ID の取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401
 		return
 	}
 
-	// パスパラメータから予約 ID を取得
 	idStr := r.PathValue("id")
 	reservationID, err := uuid.Parse(idStr)
 	if err != nil {

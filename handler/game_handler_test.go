@@ -15,11 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// テストヘルパー
-// ============================================================
-
-// handler テスト用の Handler を組み立てるヘルパー（認証不要エンドポイントのテスト用）
+// handler テスト用の Handler を組み立てるヘルパー
 func newTestHandler(deps Deps) *Handler {
 	return New(deps)
 }
@@ -65,7 +61,6 @@ func TestListGames_Handler_Success(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Errorf("want: 200, got: %d", rec.Code)
 	}
-	// レスポンスが JSON 配列であることを確認
 	var resp []map[string]interface{}
 	if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
 		t.Fatalf("failed to decode response JSON: %v", err)

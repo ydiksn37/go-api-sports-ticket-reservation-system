@@ -11,7 +11,6 @@ import (
 )
 
 // レスポンス用 DTO
-// docs/openapi.yaml の TeamResponse / GameResponse スキーマに対応
 type teamResponse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
@@ -56,7 +55,6 @@ func (h *Handler) ListGames(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/games/{id} のハンドラー
 func (h *Handler) GetGame(w http.ResponseWriter, r *http.Request) {
-	// パスパラメータの取得・バリデーション
 	idStr := r.PathValue("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -81,7 +79,6 @@ func (h *Handler) GetGame(w http.ResponseWriter, r *http.Request) {
 }
 
 // レスポンス用 DTO
-// docs/openapi.yaml の SeatAvailabilityResponse スキーマに対応
 type seatAvailabilityResponse struct {
 	SeatGrade      string `json:"seat_grade"`
 	Price          int    `json:"price"`
@@ -105,7 +102,6 @@ func toSeatAvailabilityResponse(s *domain.SeatAvailability) seatAvailabilityResp
 
 // GET /api/games/{id}/seats のハンドラー
 func (h *Handler) ListSeatAvailability(w http.ResponseWriter, r *http.Request) {
-	// パスパラメータの取得・バリデーション
 	idStr := r.PathValue("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {

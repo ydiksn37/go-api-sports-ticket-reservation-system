@@ -55,25 +55,19 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// バリデーション: 必須フィールドの空チェック
+	// バリデーション
 	if req.Name == "" || req.Email == "" || req.Password == "" {
 		h.respondError(w, errors.New("name, email, and password are required"), http.StatusBadRequest) // 400
 		return
 	}
-
-	// バリデーション: email
 	if !isValidEmail(req.Email) {
 		h.respondError(w, errors.New("invalid email format"), http.StatusBadRequest) // 400
 		return
 	}
-
-	// バリデーション: username
 	if !isValidUsername(req.Name) {
 		h.respondError(w, errors.New("username must be 3-50 characters and contain only alphanumeric, underscore, or hyphen"), http.StatusBadRequest) // 400
 		return
 	}
-
-	// バリデーション: password
 	if !isValidPassword(req.Password) {
 		h.respondError(w, errors.New("password must be between 8 and 72 characters"), http.StatusBadRequest) // 400
 		return
@@ -86,7 +80,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		Password: req.Password,
 	})
 	if err != nil {
-		// UseCase でのエラーを HTTP ステータスにマッピング
 		switch {
 		case errors.Is(err, usecase.ErrEmailAlreadyExists):
 			h.respondError(w, err, http.StatusConflict) // 409
@@ -99,7 +92,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// トークン生成
-	// authbundle を使ったトークン生成は Handler 層で行う
 	accessToken, err := h.authBundleService.GenerateAccessToken(output.UserID)
 	if err != nil {
 		h.respondError(w, errors.New("failed to generate access token"), http.StatusInternalServerError) // 500
@@ -120,7 +112,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/user/me のハンドラー
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	// AuthRequired ミドルウェアが context に注入した userID を取得
 	userID, ok := getUserIDFromContext(r.Context())
 	if !ok {
 		h.respondError(w, errors.New("unauthorized"), http.StatusUnauthorized) // 401

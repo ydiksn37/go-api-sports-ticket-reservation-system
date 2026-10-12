@@ -5,10 +5,6 @@ import (
 	"context"
 )
 
-// ============================================================
-// UserUseCase モック
-// ============================================================
-
 // usecase.UserUseCase の仮実装
 type UserUseCase struct {
 	SignupFn func(ctx context.Context, input usecase.SignupInput) (*usecase.SignupOutput, error)
@@ -31,10 +27,6 @@ func (m *UserUseCase) Me(ctx context.Context, input usecase.MeInput) (*usecase.M
 
 // コンパイル時に usecase.UserUseCase インターフェースを満たしているか検証
 var _ usecase.UserUseCase = (*UserUseCase)(nil)
-
-// ============================================================
-// GameUseCase モック
-// ============================================================
 
 // usecase.GameUseCase の仮実装
 type GameUseCase struct {
@@ -59,10 +51,6 @@ func (m *GameUseCase) GetGame(ctx context.Context, input usecase.GetGameInput) (
 // コンパイル時に usecase.GameUseCase インターフェースを満たしているか検証
 var _ usecase.GameUseCase = (*GameUseCase)(nil)
 
-// ============================================================
-// SeatUseCase モック
-// ============================================================
-
 // usecase.SeatUseCase の仮実装
 type SeatUseCase struct {
 	ListSeatAvailabilityFn func(ctx context.Context, input usecase.ListSeatAvailabilityInput) (*usecase.ListSeatAvailabilityOutput, error)
@@ -77,10 +65,6 @@ func (m *SeatUseCase) ListSeatAvailability(ctx context.Context, input usecase.Li
 
 // コンパイル時に usecase.SeatUseCase インターフェースを満たしているか検証
 var _ usecase.SeatUseCase = (*SeatUseCase)(nil)
-
-// ============================================================
-// ReservationUseCase モック
-// ============================================================
 
 // usecase.ReservationUseCase の仮実装
 type ReservationUseCase struct {

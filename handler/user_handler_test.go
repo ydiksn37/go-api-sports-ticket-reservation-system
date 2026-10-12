@@ -237,7 +237,7 @@ func TestMe_Handler_Success(t *testing.T) {
 	h := newTestHandler(Deps{UserUseCase: ucMock})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/user/me", nil)
-	req = withUserID(req, userID) // context に userID を注入
+	req = withUserID(req, userID)
 	rec := httptest.NewRecorder()
 	h.Me(rec, req)
 

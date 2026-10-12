@@ -16,10 +16,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// テストヘルパー
-// ============================================================
-
 // CreateReservation リクエスト JSON を組み立てるヘルパー
 func createReservationJSON(gameID string, seats []map[string]interface{}) *bytes.Buffer {
 	body := map[string]interface{}{
