@@ -63,7 +63,6 @@ func (h *Handler) extractTokenFromRequest(r *http.Request) string {
 	return ""
 }
 
-// http.ResponseWriter をラップしてステータスコードとエラーレスポンスの Body をキャプチャする
 type responseWriter struct {
 	http.ResponseWriter
 	status  int
@@ -71,7 +70,6 @@ type responseWriter struct {
 }
 
 func newResponseWriter(w http.ResponseWriter) *responseWriter {
-	// ハンドラーで WriteHeader が明示的に呼ばれない場合のデフォルトは 200
 	return &responseWriter{ResponseWriter: w, status: http.StatusOK}
 }
 
@@ -96,11 +94,14 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 			state := &requestLogState{}
 			r = r.WithContext(context.WithValue(r.Context(), requestLogStateKey{}, state))
 
-			// リクエスト Body を読み取る（最大 1KB に制限して大量データを避ける）
+			// リクエスト Body を読み取る
 			bodyBytes, _ := io.ReadAll(io.LimitReader(r.Body, 1024))
 			// 後続 handler が読み直せるように復元
 			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 			bodyStr := strings.TrimSpace(string(bodyBytes))
+			if r.Method == http.MethodPost && r.URL.Path == "/api/user/signup" {
+				bodyStr = "-"
+			}
 
 			// ResponseWriter をラップ
 			rw := newResponseWriter(w)
@@ -108,7 +109,6 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 			// 後続の handler を実行
 			next.ServeHTTP(rw, r)
 
-			// 認証時に共有されたユーザー ID を取得
 			userID := getUserIDStr(state)
 
 			// アクセスログ: 全リクエストを記録
