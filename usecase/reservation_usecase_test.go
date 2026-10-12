@@ -667,8 +667,8 @@ func TestCancelReservation_NotCancellable_Expired(t *testing.T) {
 		ReservationID: reservationID,
 	})
 
-	if !errors.Is(err, usecase.ErrReservationNotCancellable) {
-		t.Errorf("want: ErrReservationNotCancellable, got: %v", err)
+	if !errors.Is(err, usecase.ErrReservationExpired) {
+		t.Errorf("want: ErrReservationExpired, got: %v", err)
 	}
 }
 
