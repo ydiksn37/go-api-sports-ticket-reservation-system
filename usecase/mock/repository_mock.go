@@ -9,10 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// UserRepository モック
-// ============================================================
-
 // domain.UserRepository の仮実装
 type UserRepository struct {
 	CreateFn         func(ctx context.Context, user *domain.User) error
@@ -52,10 +48,6 @@ func (m *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Us
 // コンパイル時に domain.UserRepository インターフェースを満たしているか検証
 var _ domain.UserRepository = (*UserRepository)(nil)
 
-// ============================================================
-// GameRepository モック
-// ============================================================
-
 // domain.GameRepository の仮実装
 type GameRepository struct {
 	FindAllFn  func(ctx context.Context) ([]*domain.Game, error)
@@ -79,10 +71,6 @@ func (m *GameRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Ga
 // コンパイル時に domain.GameRepository インターフェースを満たしているか検証
 var _ domain.GameRepository = (*GameRepository)(nil)
 
-// ============================================================
-// SeatRepository モック
-// ============================================================
-
 // domain.SeatRepository の仮実装
 type SeatRepository struct {
 	FindAvailabilityByGameIDFn func(ctx context.Context, gameID uuid.UUID) ([]*domain.SeatAvailability, error)
@@ -97,10 +85,6 @@ func (m *SeatRepository) FindAvailabilityByGameID(ctx context.Context, gameID uu
 
 // コンパイル時に domain.SeatRepository インターフェースを満たしているか検証
 var _ domain.SeatRepository = (*SeatRepository)(nil)
-
-// ============================================================
-// ReservationRepository モック
-// ============================================================
 
 // domain.ReservationRepository の仮実装
 type ReservationRepository struct {
@@ -157,10 +141,6 @@ func (m *ReservationRepository) UpdateStatus(ctx context.Context, tx domain.TxCo
 // コンパイル時に domain.ReservationRepository インターフェースを満たしているか検証
 var _ domain.ReservationRepository = (*ReservationRepository)(nil)
 
-// ============================================================
-// TicketRepository モック
-// ============================================================
-
 // domain.TicketRepository の仮実装
 type TicketRepository struct {
 	LockAvailableFn       func(ctx context.Context, tx domain.TxContext, gameID uuid.UUID, quantity int) ([]*domain.Ticket, error)
@@ -208,10 +188,6 @@ func (m *TicketRepository) BulkRelease(ctx context.Context, tx domain.TxContext,
 // コンパイル時に domain.TicketRepository インターフェースを満たしているか検証
 var _ domain.TicketRepository = (*TicketRepository)(nil)
 
-// ============================================================
-// PasswordHasher モック
-// ============================================================
-
 // domain.PasswordHasher の仮実装
 type PasswordHasher struct {
 	HashPasswordFn  func(password string) (string, error)
@@ -236,14 +212,8 @@ func (m *PasswordHasher) CheckPassword(password, hash string) bool {
 // コンパイル時に domain.PasswordHasher インターフェースを満たしているか検証
 var _ domain.PasswordHasher = (*PasswordHasher)(nil)
 
-// ============================================================
-// TxManager / TxContext モック
-// ============================================================
-
 // domain.TxManager の仮実装
-// 実際の DB トランザクションの手順を完全に無視して、渡された処理（fn）だけをダイレクトに実行する
 type TxManager struct {
-	// RunInTxFn をセットすることでエラーケース等を注入できる
 	RunInTxFn func(ctx context.Context, fn func(tx domain.TxContext) error) error
 }
 
@@ -281,10 +251,6 @@ type sqlResult struct{}
 
 func (sqlResult) LastInsertId() (int64, error) { return 0, nil }
 func (sqlResult) RowsAffected() (int64, error) { return 1, nil }
-
-// ============================================================
-// テストヘルパー（ダミーエンティティ生成）
-// ============================================================
 
 // テスト用のダミー User エンティティを生成する
 func NewUser(id uuid.UUID, username, email string) *domain.User {

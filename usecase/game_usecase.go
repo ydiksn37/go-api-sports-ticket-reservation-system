@@ -9,50 +9,30 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// センチネルエラー定義
-// ============================================================
-
+// エラー定義
 var (
 	// 指定 ID の試合が存在しない場合のエラー
 	ErrGameNotFound = errors.New("game not found")
 )
 
-// ============================================================
 // DTO 定義
-// ============================================================
-
-// 試合一覧取得の出力データ
 type ListGamesOutput struct {
 	Games []*domain.Game
 }
 
-// 試合詳細取得の入力データ
 type GetGameInput struct {
 	GameID uuid.UUID
 }
 
-// 試合詳細取得の出力データ
 type GetGameOutput struct {
 	Game *domain.Game
 }
 
-// ============================================================
-// インターフェース定義
-// Handler はこのインターフェースに依存
-// ============================================================
-
 // 試合情報に関するビジネスロジックのインターフェース
 type GameUseCase interface {
-	// 全試合を一覧取得する
 	ListGames(ctx context.Context) (*ListGamesOutput, error)
-	// 指定 ID の試合を取得する
 	GetGame(ctx context.Context, input GetGameInput) (*GetGameOutput, error)
 }
-
-// ============================================================
-// UseCase ロジック
-// ============================================================
 
 // DIP のため domain.GameRepository インターフェースに依存
 type gameUseCase struct {

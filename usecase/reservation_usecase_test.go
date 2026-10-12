@@ -13,10 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// テストヘルパー
-// ============================================================
-
 // テスト用の ReservationUseCase を組み立てるヘルパー
 func newReservationUseCase(
 	reservationRepo *repositorymock.ReservationRepository,

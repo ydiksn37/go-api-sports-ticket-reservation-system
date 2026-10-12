@@ -10,10 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ============================================================
-// センチネルエラー定義
-// ============================================================
-
+// エラー定義
 var (
 	// メールアドレスが既に登録されている場合のエラー
 	ErrEmailAlreadyExists = errors.New("email already exists")
@@ -23,49 +20,32 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-// ============================================================
 // DTO 定義
-// ============================================================
-
-// Signup ユースケースへの入力データ（json タグを持たない）
 type SignupInput struct {
 	Name     string
 	Email    string
 	Password string
 }
 
-// Signup ユースケースからの出力データ
-// トークン生成は Handler 側で行う（authbundle に依存しない）
 type SignupOutput struct {
 	UserID uuid.UUID
 }
 
-// Me ユースケースへの入力データ
 type MeInput struct {
 	UserID uuid.UUID
 }
 
-// Me ユースケースからの出力データ
 type MeOutput struct {
 	UserID   uuid.UUID
 	Username string
 	Email    string
 }
 
-// ============================================================
-// インターフェース定義
-// Handler はこのインターフェースに依存
-// ============================================================
-
 // ユーザーに関するビジネスロジックのインターフェース
 type UserUseCase interface {
 	Signup(ctx context.Context, input SignupInput) (*SignupOutput, error)
 	Me(ctx context.Context, input MeInput) (*MeOutput, error)
 }
-
-// ============================================================
-// UseCase ロジック
-// ============================================================
 
 // DIP のため domain.UserRepository / domain.PasswordHasher インターフェースに依存
 type userUseCase struct {
@@ -86,7 +66,6 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 		return nil, fmt.Errorf("Signup: find by email: %w", err)
 	}
 	if existingByEmail != nil {
-		// センチネルエラーを返す
 		return nil, ErrEmailAlreadyExists
 	}
 	// ユーザー名の重複チェック
@@ -95,7 +74,6 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 		return nil, fmt.Errorf("Signup: find by username: %w", err)
 	}
 	if existingByUsername != nil {
-		// センチネルエラーを返す
 		return nil, ErrUsernameAlreadyExists
 	}
 	// パスワードのハッシュ化
@@ -127,7 +105,6 @@ func (u *userUseCase) Me(ctx context.Context, input MeInput) (*MeOutput, error) 
 		return nil, fmt.Errorf("Me: find user: %w", err)
 	}
 	if user == nil {
-		// ログイン認証済みなのに見つからないケース（アカウント削除等）
 		return nil, ErrUserNotFound
 	}
 	return &MeOutput{
