@@ -333,9 +333,14 @@ func (u *reservationUseCase) CancelReservation(ctx context.Context, input Cancel
 		return ErrReservationAlreadyPurchased
 	}
 
-	// キャンセル済み or 期限切れの予約もキャンセル不可
-	if reservation.Status == "cancelled" || reservation.Status == "expired" {
+	// キャンセル済み
+	if reservation.Status == "cancelled" {
 		return ErrReservationNotCancellable
+	}
+
+	// 期限切れの予約もキャンセル不可
+	if reservation.Status == "expired" {
+		return ErrReservationExpired
 	}
 
 	// キャンセル期限チェック: expires_at を過ぎた pending 予約はキャンセル不可
