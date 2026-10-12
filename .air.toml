@@ -1,8 +1,8 @@
 root = "."
-tmp_dir = "tmp"
+tmp_dir = "/tmp/air"
 
 [build]
-  cmd = "go build -buildvcs=false -o ./tmp/main ./cmd/server/main.go"
-  bin = "./tmp/main"
+  cmd = "go build -buildvcs=false -o /tmp/air/main ./cmd/server/main.go"
+  bin = "/tmp/air/main"
   include_ext = ["go", "tpl", "tmpl", "html", "yaml"]
   exclude_dir = ["assets", "tmp", "vendor"]
