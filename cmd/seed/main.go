@@ -86,9 +86,7 @@ func runSeeder(db *sqlx.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	// パニックなどで途中で落ちた場合、ロールバックする
 	defer tx.Rollback()
-	// 各テーブルの Seed 処理を順次実行
 	if err := truncateAllTables(tx); err != nil {
 		return err
 	}
@@ -107,7 +105,6 @@ func runSeeder(db *sqlx.DB) error {
 	if err := seedTickets(tx, games, seats); err != nil {
 		return err
 	}
-	// 全て成功したらコミット
 	return tx.Commit()
 }
 

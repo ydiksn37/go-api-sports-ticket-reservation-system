@@ -26,8 +26,8 @@ type ticketRow struct {
 	ID            uuid.UUID  `db:"id"`
 	GameID        uuid.UUID  `db:"game_id"`
 	SeatID        uuid.UUID  `db:"seat_id"`
-	ReservationID *uuid.UUID `db:"reservation_id"` // nullable
-	Price         int        `db:"price"`          // seats.price を JOIN
+	ReservationID *uuid.UUID `db:"reservation_id"`
+	Price         int        `db:"price"`
 	Status        string     `db:"status"`
 	CreatedAt     time.Time  `db:"created_at"`
 	UpdatedAt     time.Time  `db:"updated_at"`
