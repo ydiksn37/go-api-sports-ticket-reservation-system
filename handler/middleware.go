@@ -4,6 +4,7 @@ import (
 	"42tokyo-road-to-dena-server/infrastructure/authbundle"
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -85,6 +86,20 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return rw.ResponseWriter.Write(b)
 }
 
+func oneLineBody(body string) string {
+	body = strings.TrimSpace(body)
+	if body == "" {
+		return ""
+	}
+
+	var compact bytes.Buffer
+	if err := json.Compact(&compact, []byte(body)); err == nil {
+		return compact.String()
+	}
+
+	return strings.NewReplacer("\r", `\r`, "\n", `\n`).Replace(body)
+}
+
 func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +108,7 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 
 			bodyBytes, _ := io.ReadAll(io.LimitReader(r.Body, 1024))
 			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-			bodyStr := strings.TrimSpace(string(bodyBytes))
+			bodyStr := oneLineBody(string(bodyBytes))
 			if r.Method == http.MethodPost && r.URL.Path == "/api/user/signup" {
 				bodyStr = "-"
 			}
@@ -111,7 +126,7 @@ func Logger(accessLog, errorLog *log.Logger) func(http.Handler) http.Handler {
 			// エラーログ: 4xx/5xx のみ記録
 			if rw.status >= 400 {
 				errorLog.Printf("[ERROR] method=%s url=%s ip=%s user_id=%s status=%d body_req=%s body_res=%s",
-					r.Method, r.URL.Path, r.RemoteAddr, userID, rw.status, bodyStr, strings.TrimSpace(rw.errBody.String()))
+					r.Method, r.URL.Path, r.RemoteAddr, userID, rw.status, bodyStr, oneLineBody(rw.errBody.String()))
 			}
 		})
 	}
