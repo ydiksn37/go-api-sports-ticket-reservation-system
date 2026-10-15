@@ -18,7 +18,6 @@ import (
 
 func TestSignup_Success(t *testing.T) {
 	userRepo := &repositorymock.UserRepository{
-		// メール・ユーザー名ともに重複なし
 		FindByEmailFn:    func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
 		FindByUsernameFn: func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
 		CreateFn:         func(_ context.Context, _ *domain.User) error { return nil },
@@ -64,7 +63,6 @@ func TestSignup_EmailAlreadyExists(t *testing.T) {
 
 func TestSignup_UsernameAlreadyExists(t *testing.T) {
 	userRepo := &repositorymock.UserRepository{
-		// メールは重複なし・ユーザー名は重複あり
 		FindByEmailFn: func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
 		FindByUsernameFn: func(_ context.Context, username string) (*domain.User, error) {
 			return repositorymock.NewUser(uuid.New(), username, "fakeman@example.com"), nil
@@ -200,7 +198,6 @@ func TestMe_Success(t *testing.T) {
 
 func TestMe_NotFound(t *testing.T) {
 	userRepo := &repositorymock.UserRepository{
-		// ユーザーが見つからない
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.User, error) { return nil, nil },
 	}
 	uc := usecase.NewUserUseCase(userRepo, &repositorymock.PasswordHasher{})

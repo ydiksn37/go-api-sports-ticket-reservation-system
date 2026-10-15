@@ -85,14 +85,12 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// game_id のバリデーション
 	gameID, err := uuid.Parse(body.GameID)
 	if err != nil {
 		h.respondError(w, errors.New("invalid game_id"), http.StatusBadRequest) // 400
 		return
 	}
 
-	// seats のバリデーション
 	if len(body.Seats) == 0 {
 		h.respondError(w, errors.New("seats must not be empty"), http.StatusBadRequest) // 400
 		return
@@ -102,7 +100,6 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 			h.respondError(w, errors.New("seat_grade must not be empty"), http.StatusBadRequest) // 400
 			return
 		}
-		// seat_grade が有効な値かチェック
 		if !isValidSeatGrade(s.SeatGrade) {
 			h.respondError(w, errors.New("invalid seat_grade"), http.StatusBadRequest) // 400
 			return
@@ -142,7 +139,6 @@ func (h *Handler) CreateReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
 }
 
@@ -203,7 +199,6 @@ func (h *Handler) GetReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
 }
 
@@ -242,7 +237,6 @@ func (h *Handler) PurchaseReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, toReservationResponse(output.Reservation), http.StatusOK) // 200
 }
 
@@ -282,6 +276,5 @@ func (h *Handler) CancelReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを書き込む (204 No Content)
 	w.WriteHeader(http.StatusNoContent) // 204
 }

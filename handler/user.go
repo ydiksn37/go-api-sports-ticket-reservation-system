@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// docs/openapi.yaml 仕様の SignupRequest スキーマと対応
 type SignupRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -55,7 +54,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// バリデーション
 	if req.Name == "" || req.Email == "" || req.Password == "" {
 		h.respondError(w, errors.New("name, email, and password are required"), http.StatusBadRequest) // 400
 		return
@@ -106,7 +104,6 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	// Cookie にトークンをセット
 	setAuthCookies(w, accessToken, refreshToken, h.authConfig)
 
-	// レスポンスを返す
 	h.respondJSON(w, toSignupResponse(output, accessToken, refreshToken), http.StatusCreated) // 201
 }
 
@@ -130,6 +127,5 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, toMeResponse(output), http.StatusOK) // 200
 }

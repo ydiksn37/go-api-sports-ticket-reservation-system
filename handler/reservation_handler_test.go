@@ -84,7 +84,7 @@ func TestCreateReservation_Handler_InvalidQuantity(t *testing.T) {
 	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
 
 	body := createReservationJSON(uuid.New().String(), []map[string]interface{}{
-		{"seat_grade": "SS", "quantity": 0}, // 0 は無効
+		{"seat_grade": "SS", "quantity": 0},
 	})
 	req := httptest.NewRequest(http.MethodPost, "/api/reservations", body)
 	req.Header.Set("Content-Type", "application/json")
@@ -98,7 +98,6 @@ func TestCreateReservation_Handler_InvalidQuantity(t *testing.T) {
 }
 
 func TestCreateReservation_Handler_InvalidSeatGrade(t *testing.T) {
-	// seat_grade が有効な値以外の場合 → 400
 	userID := uuid.New()
 	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
 
@@ -117,7 +116,6 @@ func TestCreateReservation_Handler_InvalidSeatGrade(t *testing.T) {
 }
 
 func TestCreateReservation_Handler_InvalidSeatGrade_Empty(t *testing.T) {
-	// seat_grade が空文字の場合 → 400
 	userID := uuid.New()
 	h := newTestHandler(Deps{ReservationUseCase: &handlermock.ReservationUseCase{}})
 

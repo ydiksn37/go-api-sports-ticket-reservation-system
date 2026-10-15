@@ -198,7 +198,6 @@ func (m *PasswordHasher) HashPassword(password string) (string, error) {
 	if m.HashPasswordFn != nil {
 		return m.HashPasswordFn(password)
 	}
-	// デフォルト: ハッシュ化せずそのまま返す（テスト用）
 	return "hashed_" + password, nil
 }
 
@@ -221,7 +220,6 @@ func (m *TxManager) RunInTx(ctx context.Context, fn func(tx domain.TxContext) er
 	if m.RunInTxFn != nil {
 		return m.RunInTxFn(ctx, fn)
 	}
-	// デフォルト: そのまま fn を実行する（コミット/ロールバックなし）
 	return fn(&TxContext{})
 }
 
@@ -246,7 +244,6 @@ func (t *TxContext) SelectContext(_ context.Context, _ interface{}, _ string, _ 
 // コンパイル時に domain.TxContext インターフェースを満たしているか検証
 var _ domain.TxContext = (*TxContext)(nil)
 
-// sql.Result の最小実装
 type sqlResult struct{}
 
 func (sqlResult) LastInsertId() (int64, error) { return 0, nil }

@@ -25,8 +25,8 @@ type SeatUseCase interface {
 // DIP のため domain.SeatRepository / domain.GameRepository / domain.ReservationRepository インターフェースに依存
 type seatUseCase struct {
 	seatRepo        domain.SeatRepository
-	gameRepo        domain.GameRepository        // ゲーム存在確認のため
-	reservationRepo domain.ReservationRepository // 期限切れ予約のチケット解放のため
+	gameRepo        domain.GameRepository
+	reservationRepo domain.ReservationRepository
 }
 
 // コンストラクタ

@@ -43,13 +43,11 @@ func (h *Handler) ListGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 空一覧でも null ではなく [] を返す
 	resp := make([]gameResponse, 0, len(output.Games))
 	for _, g := range output.Games {
 		resp = append(resp, toGameResponse(g))
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, resp, http.StatusOK) // 200
 }
 
@@ -74,7 +72,6 @@ func (h *Handler) GetGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, toGameResponse(output.Game), http.StatusOK) // 200
 }
 
@@ -121,12 +118,10 @@ func (h *Handler) ListSeatAvailability(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 空一覧でも null ではなく [] を返す
 	resp := make([]seatAvailabilityResponse, 0, len(output.Seats))
 	for _, s := range output.Seats {
 		resp = append(resp, toSeatAvailabilityResponse(s))
 	}
 
-	// レスポンスを返す
 	h.respondJSON(w, resp, http.StatusOK) // 200
 }

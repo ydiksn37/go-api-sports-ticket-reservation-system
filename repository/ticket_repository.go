@@ -47,7 +47,6 @@ func toTicketDomain(row ticketRow) *domain.Ticket {
 	}
 }
 
-
 // Query 定数
 const lockAvailableTicketsQuery = `
 	SELECT

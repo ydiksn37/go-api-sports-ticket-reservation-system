@@ -85,7 +85,6 @@ func TestListGames_Handler_Empty(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Errorf("want: 200, got: %d", rec.Code)
 	}
-	// 空一覧でも null でなく [] が返ることを確認
 	var resp []map[string]interface{}
 	if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
 		t.Fatalf("failed to decode response JSON: %v", err)

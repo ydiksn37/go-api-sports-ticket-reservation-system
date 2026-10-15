@@ -86,7 +86,6 @@ func groupReservationsWithTickets(rows []reservationWithTicketRow) []*domain.Res
 			resMap[row.ID] = res
 			result = append(result, res)
 		}
-		// チケットが存在する場合のみ追加（LEFT JOIN で NULL になる場合は除外）
 		if row.TicketID != nil {
 			res.Tickets = append(res.Tickets, &domain.Ticket{
 				ID:            *row.TicketID,

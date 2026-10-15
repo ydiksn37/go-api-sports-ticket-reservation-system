@@ -44,7 +44,6 @@ type Ticket struct {
 
 func main() {
 	runMigration()
-	// .env から DATABASE_URL を取得
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		log.Fatal("DATABASE_URL environment variable is not set")
@@ -61,7 +60,6 @@ func main() {
 
 func runMigration() {
 	log.Println("running migrations...")
-	// .env から DATABASE_URL を取得
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		log.Fatal("DATABASE_URL environment variable is not set")
@@ -157,19 +155,14 @@ func seedSeats(tx *sqlx.Tx) ([]Seat, error) {
 func seedGames(tx *sqlx.Tx, teams []Team) ([]Game, error) {
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	var games []Game
-	// 基準日
 	baseDate := time.Date(2025, 8, 10, 18, 0, 0, 0, loc)
-	// 10日分の試合データをランダムに生成
 	for i := 0; i < 10; i++ {
-		// ランダムにホームとアウェイを決定
 		homeIdx := rand.IntN(len(teams))
 		awayIdx := rand.IntN(len(teams))
 		for homeIdx == awayIdx {
 			awayIdx = rand.IntN(len(teams))
 		}
-		// 基準日から i 日ずつずらして試合日時を設定
 		gameDate := baseDate.AddDate(0, 0, i)
-		// 開始時間は 13:00, 14:00, 18:00 のいずれかに設定
 		startHour := []int{13, 14, 18}[rand.IntN(3)]
 		startTime := time.Date(gameDate.Year(), gameDate.Month(), gameDate.Day(), startHour, 0, 0, 0, loc)
 		game := Game{
@@ -202,7 +195,6 @@ func seedTickets(tx *sqlx.Tx, games []Game, seats []Seat) error {
 			}
 		}
 	}
-	// tickets が空の場合はスキップ
 	if len(tickets) == 0 {
 		return nil
 	}

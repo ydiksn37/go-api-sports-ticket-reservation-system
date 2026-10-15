@@ -51,9 +51,9 @@ func Load() (*Config, error) {
 			JWTIssuer:    getEnv("JWT_ISSUER", "road-to-dena"),
 			JWTAudience:  getEnv("JWT_AUDIENCE", "road-to-dena-client"),
 			AccessTTL:    15 * time.Minute,
-			RefreshTTL:   7 * 24 * time.Hour, // 7日間
+			RefreshTTL:   7 * 24 * time.Hour,
 			CookieDomain: getEnv("COOKIE_DOMAIN", ""),
-			CookieSecure: false, // ローカル開発 http のため false
+			CookieSecure: false,
 		},
 	}
 

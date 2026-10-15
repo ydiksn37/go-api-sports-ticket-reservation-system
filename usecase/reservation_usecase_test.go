@@ -43,7 +43,6 @@ func TestCreateReservation_Success(t *testing.T) {
 			if gotTx != tx {
 				t.Errorf("LockAvailable: want same transaction, got: %T", gotTx)
 			}
-			// qty 枚分のチケットを返す
 			tickets := make([]*domain.Ticket, qty)
 			for i := range tickets {
 				tickets[i] = repositorymock.NewTicket(ticketID, gID, 5000)
@@ -118,7 +117,6 @@ func TestCreateReservation_InsufficientSeats(t *testing.T) {
 		},
 	}
 	ticketRepo := &repositorymock.TicketRepository{
-		// 空スライスを返す = 残席 0
 		LockAvailableFn: func(_ context.Context, _ domain.TxContext, _ uuid.UUID, _ int) ([]*domain.Ticket, error) {
 			return []*domain.Ticket{}, nil
 		},
@@ -354,7 +352,6 @@ func TestGetReservation_Forbidden(t *testing.T) {
 
 	uc := newReservationUseCase(reservationRepo, &repositorymock.TicketRepository{}, &repositorymock.GameRepository{}, &repositorymock.TxManager{})
 
-	// otherUserID で ownerID の予約を取得しようとする
 	_, err := uc.GetReservation(context.Background(), usecase.GetReservationInput{
 		UserID:        otherUserID,
 		ReservationID: reservationID,
@@ -449,7 +446,6 @@ func TestPurchaseReservation_Forbidden(t *testing.T) {
 func TestPurchaseReservation_Expired_ByStatus(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status が "expired" の予約
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(-1*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -473,7 +469,6 @@ func TestPurchaseReservation_Expired_ByStatus(t *testing.T) {
 func TestPurchaseReservation_Expired_ByTime(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status は pending だが期限超過
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -497,7 +492,6 @@ func TestPurchaseReservation_Expired_ByTime(t *testing.T) {
 func TestPurchaseReservation_NotPending(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status が "confirmed" = pending 以外
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -599,7 +593,6 @@ func TestCancelReservation_Forbidden(t *testing.T) {
 func TestCancelReservation_AlreadyPurchased(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status が "confirmed" = 購入済み
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "confirmed", time.Now().Add(10*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -623,7 +616,6 @@ func TestCancelReservation_AlreadyPurchased(t *testing.T) {
 func TestCancelReservation_NotCancellable_Cancelled(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status が "cancelled" = 既にキャンセル済み
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "cancelled", time.Now().Add(10*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -647,7 +639,6 @@ func TestCancelReservation_NotCancellable_Cancelled(t *testing.T) {
 func TestCancelReservation_NotCancellable_Expired(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status が "expired"
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "expired", time.Now().Add(10*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{
@@ -671,7 +662,6 @@ func TestCancelReservation_NotCancellable_Expired(t *testing.T) {
 func TestCancelReservation_Expired_ByTime(t *testing.T) {
 	userID := uuid.New()
 	reservationID := uuid.New()
-	// status は pending だが期限超過
 	res := repositorymock.NewReservation(reservationID, userID, uuid.New(), "pending", time.Now().Add(-1*time.Minute))
 
 	reservationRepo := &repositorymock.ReservationRepository{

@@ -12,12 +12,9 @@ import (
 
 // エラー定義
 var (
-	// メールアドレスが既に登録されている場合のエラー
-	ErrEmailAlreadyExists = domain.ErrEmailAlreadyExists
-	// ユーザー名が既に登録されている場合のエラー
+	ErrEmailAlreadyExists    = domain.ErrEmailAlreadyExists
 	ErrUsernameAlreadyExists = domain.ErrUsernameAlreadyExists
-	// ユーザーが見つからない場合のエラー
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound          = errors.New("user not found")
 )
 
 // DTO 定義
@@ -60,7 +57,6 @@ func NewUserUseCase(userRepo domain.UserRepository, hasher domain.PasswordHasher
 
 // ユーザー登録のビジネスロジック
 func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOutput, error) {
-	// メールアドレスの重複チェック
 	existingByEmail, err := u.userRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, fmt.Errorf("Signup: find by email: %w", err)
@@ -68,7 +64,6 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 	if existingByEmail != nil {
 		return nil, ErrEmailAlreadyExists
 	}
-	// ユーザー名の重複チェック
 	existingByUsername, err := u.userRepo.FindByUsername(ctx, input.Name)
 	if err != nil {
 		return nil, fmt.Errorf("Signup: find by username: %w", err)
@@ -76,7 +71,6 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 	if existingByUsername != nil {
 		return nil, ErrUsernameAlreadyExists
 	}
-	// パスワードのハッシュ化
 	hashedPassword, err := u.hasher.HashPassword(input.Password)
 	if err != nil {
 		return nil, fmt.Errorf("Signup: hash password: %w", err)

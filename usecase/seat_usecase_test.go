@@ -50,7 +50,6 @@ func TestListSeatAvailability_Success(t *testing.T) {
 
 func TestListSeatAvailability_GameNotFound(t *testing.T) {
 	gameRepo := &repositorymock.GameRepository{
-		// 試合が見つからない
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) { return nil, nil },
 	}
 	reservationRepo := &repositorymock.ReservationRepository{

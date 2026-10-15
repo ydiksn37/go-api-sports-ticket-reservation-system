@@ -12,24 +12,15 @@ import (
 
 // エラー定義
 var (
-	// 同じ座席グレードが複数指定された場合のエラー
-	ErrDuplicateSeatGrade = errors.New("duplicate seat grade")
-	// 指定グレードの空き座席が不足している場合のエラー
-	ErrInsufficientSeats = errors.New("insufficient available seats")
-	// 予約が見つからない場合のエラー
-	ErrReservationNotFound = errors.New("reservation not found")
-	// 他ユーザーの予約にアクセスした場合のエラー
-	ErrReservationForbidden = errors.New("forbidden: not your reservation")
-	// 予約が期限切れの場合のエラー
-	ErrReservationExpired = errors.New("reservation expired")
-	// 予約が pending 以外のステータスの場合のエラー
-	ErrReservationNotPending = errors.New("reservation is not in pending status")
-	// 購入済みの予約をキャンセルしようとした場合のエラー
+	ErrDuplicateSeatGrade          = errors.New("duplicate seat grade")
+	ErrInsufficientSeats           = errors.New("insufficient available seats")
+	ErrReservationNotFound         = errors.New("reservation not found")
+	ErrReservationForbidden        = errors.New("forbidden: not your reservation")
+	ErrReservationExpired          = errors.New("reservation expired")
+	ErrReservationNotPending       = errors.New("reservation is not in pending status")
 	ErrReservationAlreadyPurchased = errors.New("reservation already purchased")
-	// キャンセル済み or 期限切れでキャンセル操作不可の場合のエラー
-	ErrReservationNotCancellable = errors.New("reservation cannot be cancelled")
+	ErrReservationNotCancellable   = errors.New("reservation cannot be cancelled")
 )
-
 
 // DTO 定義
 type SeatRequest struct {
@@ -112,7 +103,6 @@ func NewReservationUseCase(
 
 // 予約作成のビジネスロジック
 func (u *reservationUseCase) CreateReservation(ctx context.Context, input CreateReservationInput) (*CreateReservationOutput, error) {
-	// 同じグレードを拒否する
 	seenSeatGrades := make(map[string]struct{}, len(input.Seats))
 	for _, seat := range input.Seats {
 		if _, exists := seenSeatGrades[seat.SeatGrade]; exists {
@@ -121,7 +111,6 @@ func (u *reservationUseCase) CreateReservation(ctx context.Context, input Create
 		seenSeatGrades[seat.SeatGrade] = struct{}{}
 	}
 
-	// ゲーム存在確認
 	game, err := u.gameRepo.FindByID(ctx, input.GameID)
 	if err != nil {
 		return nil, fmt.Errorf("CreateReservation: %w", err)

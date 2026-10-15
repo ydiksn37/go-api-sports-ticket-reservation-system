@@ -51,7 +51,6 @@ func toGameDomain(row gameRow) *domain.Game {
 	}
 }
 
-
 // Query 定数
 const findAllGamesQuery = `
 	SELECT

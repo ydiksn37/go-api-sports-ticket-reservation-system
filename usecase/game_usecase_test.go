@@ -101,7 +101,6 @@ func TestGetGame_Success(t *testing.T) {
 
 func TestGetGame_NotFound(t *testing.T) {
 	gameRepo := &repositorymock.GameRepository{
-		// 試合が見つからない
 		FindByIDFn: func(_ context.Context, _ uuid.UUID) (*domain.Game, error) { return nil, nil },
 	}
 	uc := usecase.NewGameUseCase(gameRepo)
