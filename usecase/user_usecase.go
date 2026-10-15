@@ -13,9 +13,9 @@ import (
 // エラー定義
 var (
 	// メールアドレスが既に登録されている場合のエラー
-	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrEmailAlreadyExists = domain.ErrEmailAlreadyExists
 	// ユーザー名が既に登録されている場合のエラー
-	ErrUsernameAlreadyExists = errors.New("username already exists")
+	ErrUsernameAlreadyExists = domain.ErrUsernameAlreadyExists
 	// ユーザーが見つからない場合のエラー
 	ErrUserNotFound = errors.New("user not found")
 )
@@ -93,6 +93,12 @@ func (u *userUseCase) Signup(ctx context.Context, input SignupInput) (*SignupOut
 	}
 	// DB への保存
 	if err := u.userRepo.Create(ctx, user); err != nil {
+		switch {
+		case errors.Is(err, domain.ErrEmailAlreadyExists):
+			return nil, ErrEmailAlreadyExists
+		case errors.Is(err, domain.ErrUsernameAlreadyExists):
+			return nil, ErrUsernameAlreadyExists
+		}
 		return nil, fmt.Errorf("Signup: create user: %w", err)
 	}
 	return &SignupOutput{UserID: user.ID}, nil

@@ -83,6 +83,48 @@ func TestSignup_UsernameAlreadyExists(t *testing.T) {
 	}
 }
 
+func TestSignup_EmailConflictDuringCreate(t *testing.T) {
+	userRepo := &repositorymock.UserRepository{
+		FindByEmailFn:    func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
+		FindByUsernameFn: func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
+		CreateFn: func(_ context.Context, _ *domain.User) error {
+			return domain.ErrEmailAlreadyExists
+		},
+	}
+	uc := usecase.NewUserUseCase(userRepo, &repositorymock.PasswordHasher{})
+
+	_, err := uc.Signup(context.Background(), usecase.SignupInput{
+		Name:     "fakeman",
+		Email:    "fakeman@example.com",
+		Password: "password",
+	})
+
+	if !errors.Is(err, usecase.ErrEmailAlreadyExists) {
+		t.Errorf("want: ErrEmailAlreadyExists, got: %v", err)
+	}
+}
+
+func TestSignup_UsernameConflictDuringCreate(t *testing.T) {
+	userRepo := &repositorymock.UserRepository{
+		FindByEmailFn:    func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
+		FindByUsernameFn: func(_ context.Context, _ string) (*domain.User, error) { return nil, nil },
+		CreateFn: func(_ context.Context, _ *domain.User) error {
+			return domain.ErrUsernameAlreadyExists
+		},
+	}
+	uc := usecase.NewUserUseCase(userRepo, &repositorymock.PasswordHasher{})
+
+	_, err := uc.Signup(context.Background(), usecase.SignupInput{
+		Name:     "fakeman",
+		Email:    "fakeman@example.com",
+		Password: "password",
+	})
+
+	if !errors.Is(err, usecase.ErrUsernameAlreadyExists) {
+		t.Errorf("want: ErrUsernameAlreadyExists, got: %v", err)
+	}
+}
+
 func TestSignup_HashError(t *testing.T) {
 	wantErr := errors.New("bcrypt failure")
 	userRepo := &repositorymock.UserRepository{

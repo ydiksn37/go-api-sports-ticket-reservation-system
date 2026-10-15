@@ -4,11 +4,20 @@ import (
 	"42tokyo-road-to-dena-server/domain"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
+)
+
+const uniqueViolationCode pq.ErrorCode = "23505"
+
+const (
+	usersEmailConstraint    = "users_email_key"
+	usersUsernameConstraint = "users_username_key"
 )
 
 // domain.UserRepository インターフェースの PostgreSQL 実装
@@ -43,6 +52,22 @@ func toUserDomain(row userRow) *domain.User {
 	}
 }
 
+func classifyUserCreateError(err error) error {
+	var pqErr *pq.Error
+	if !errors.As(err, &pqErr) || pqErr.Code != uniqueViolationCode {
+		return err
+	}
+
+	switch pqErr.Constraint {
+	case usersEmailConstraint:
+		return domain.ErrEmailAlreadyExists
+	case usersUsernameConstraint:
+		return domain.ErrUsernameAlreadyExists
+	default:
+		return err
+	}
+}
+
 // 新しいユーザーを DB に保存
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 	query := `
@@ -58,7 +83,7 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 		user.UpdatedAt,
 	)
 	if err != nil {
-		return fmt.Errorf("userRepository.Create: %w", err)
+		return fmt.Errorf("userRepository.Create: %w", classifyUserCreateError(err))
 	}
 	return nil
 }
