@@ -1,71 +1,112 @@
-# 42Tokyo Road to DeNA Server
+# Sports Ticket Reservation API
 
-Go言語で実装されたAPIサーバーです。
-DockerコンテナかLocalか慣れてる方選んでください。
+スポーツイベントのチケット予約を管理するREST APIです。試合と座席の参照、ユーザー登録、チケットの仮予約・購入確定・キャンセルを提供します。
+
+## 主な機能
+
+- JWTによる認証（CookieまたはBearerトークン）
+- 試合一覧・試合詳細の取得
+- 座席グレードごとの在庫確認
+- 複数チケットの仮予約と有効期限管理
+- 予約の購入確定・キャンセル
+- PostgreSQLトランザクションと行ロックによる在庫管理
+- OpenAPI仕様書とSwagger UI
 
 ## 技術スタック
 
-- **言語**: Go 1.24.5
-- **Webフレームワーク**: net/http (標準ライブラリ)
-- **データベース**: PostgreSQL 15
-- **ORM/クエリビルダー**: sqlx
-- **コンテナ**: Docker & Docker Compose
+- Go 1.24.5（標準ライブラリ `net/http`）
+- PostgreSQL 15
+- sqlx
+- golang-migrate
+- Docker / Docker Compose
+
+## アーキテクチャ
+
+依存関係を `handler`、`usecase`、`domain`、`repository` に分離しています。HTTP層は入出力と認証を扱い、ユースケース層が予約処理を調整し、リポジトリ層がPostgreSQLへのアクセスを担当します。
+
+データモデルは [ER.md](ER.md) で確認できます。
 
 ## セットアップ
 
-### 前提条件
+### 必要なもの
 
-- Go 1.24以上
-- Docker & Docker Compose
+- Docker
+- Docker Compose
+- Make（任意）
 
-42 Tokyoの校舎PCでGo 1.24以上を使用する場合、以下のスクリプトを実行してください。
-```
-# Go 1.24.5をダウンロード
-wget https://go.dev/dl/go1.24.5.linux-amd64.tar.gz
-
-# ホームディレクトリに解凍
-tar -C $HOME -xzf go1.24.5.linux-amd64.tar.gz
-
-# アーカイブファイルを削除
-rm go1.24.5.linux-amd64.tar.gz
-
-# ~/.zshrcに以下の行を追加(既存のGo設定があれば置き換える):
-GOPATH=$HOME/go-workspace
-PATH=$HOME/go/bin:$GOPATH/bin:$PATH
-
-# シェル設定をリロード
-source ~/.zshrc
-
-# インストールを確認
-go version
-```
-
-### 環境変数
-
-`.env.example`を参考に`.env`ファイルを作成してください。
-
-
-### 初回セットアップ
+### Dockerで起動する
 
 ```bash
-# リポジトリのクローン
-git clone <repository-url>
-cd 42tokyo-road-to-dena-server-base
-
-# 開発環境のセットアップ
-go mod download
-go mod tidy
+git clone git@github.com:ydiksn37/go-api-sports-ticket-reservation-system.git
+cd go-api-sports-ticket-reservation-system
+cp .env.example .env
+make initialize
 ```
 
-## 開発
+`make initialize` はコンテナを起動し、マイグレーションと開発用seedデータの投入を行います。APIは `http://localhost:8080` で利用できます。
 
-### サーバーの起動
+既存のPostgreSQLボリュームを新しい設定で作り直す場合は、保存データが不要であることを確認してから次を実行してください。
 
 ```bash
-docker compose up -d
+make fclean
+make initialize
 ```
 
-### APIドキュメント（Swagger UI）
+### ローカルで実行する
 
-- OpenAPI定義: `docs/openapi.yaml`
-- サーバー起動後に `http://localhost:8080/swagger/` を開くとSwagger UIが表示されます
+Goから直接サーバーを起動する場合は、PostgreSQLを用意して `DATABASE_URL` をローカルホスト向けに設定します。
+
+```bash
+cp .env.example .env
+# DATABASE_URLのホストを db から localhost に変更
+go run ./cmd/seed
+go run ./cmd/server
+```
+
+## 環境変数
+
+| 変数 | 用途 |
+| --- | --- |
+| `POSTGRES_USER` | Docker上のPostgreSQLユーザー |
+| `POSTGRES_PASSWORD` | Docker上のPostgreSQLパスワード |
+| `POSTGRES_DB` | データベース名 |
+| `DATABASE_URL` | PostgreSQL接続URL |
+| `JWT_SECRET` | JWT署名用秘密鍵。本番環境では必ず変更してください |
+| `JWT_ISSUER` | JWT発行者 |
+| `JWT_AUDIENCE` | JWT対象者 |
+| `COOKIE_DOMAIN` | 認証CookieのDomain属性 |
+
+## API
+
+| Method | Path | 説明 | 認証 |
+| --- | --- | --- | --- |
+| `GET` | `/health` | ヘルスチェック | 不要 |
+| `POST` | `/api/user/signup` | ユーザー登録とトークン発行 | 不要 |
+| `GET` | `/api/user/me` | ログインユーザー情報 | 必要 |
+| `GET` | `/api/games` | 試合一覧 | 不要 |
+| `GET` | `/api/games/{id}` | 試合詳細 | 不要 |
+| `GET` | `/api/games/{id}/seats` | 座席在庫 | 不要 |
+| `POST` | `/api/reservations` | 仮予約作成 | 必要 |
+| `GET` | `/api/reservations` | 自分の予約一覧 | 必要 |
+| `GET` | `/api/reservations/{id}` | 予約詳細 | 必要 |
+| `PUT` | `/api/reservations/{id}/purchase` | 購入確定 | 必要 |
+| `DELETE` | `/api/reservations/{id}` | 予約キャンセル | 必要 |
+
+詳細なリクエスト・レスポンスは、起動後に [Swagger UI](http://localhost:8080/swagger/) で確認できます。OpenAPI定義は [docs/openapi.yaml](docs/openapi.yaml) です。
+
+## 開発コマンド
+
+```bash
+make help      # コマンド一覧
+make test      # ユニットテスト
+make logs      # コンテナログ
+make exec-app  # appコンテナのシェル
+make exec-db   # PostgreSQLコンソール
+make clean     # コンテナを停止
+```
+
+Dockerを使わずテストする場合は次を実行します。
+
+```bash
+go test ./...
+```

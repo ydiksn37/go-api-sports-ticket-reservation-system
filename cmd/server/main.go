@@ -1,13 +1,13 @@
 package main
 
 import (
-	"42tokyo-road-to-dena-server/config"
-	"42tokyo-road-to-dena-server/handler"
-	"42tokyo-road-to-dena-server/infrastructure/authbundle"
-	"42tokyo-road-to-dena-server/repository"
-	"42tokyo-road-to-dena-server/usecase"
 	"context"
 	"fmt"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/config"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/handler"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/infrastructure/authbundle"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/repository"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 	"log"
 	"net/http"
 	"os"

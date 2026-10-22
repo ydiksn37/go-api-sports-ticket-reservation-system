@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/usecase"
 	"encoding/json"
 	"errors"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 	"net/http"
 
 	"github.com/google/uuid"

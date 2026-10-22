@@ -1,4 +1,4 @@
-module 42tokyo-road-to-dena-server
+module github.com/ydiksn37/go-api-sports-ticket-reservation-system
 
 go 1.24.5
 

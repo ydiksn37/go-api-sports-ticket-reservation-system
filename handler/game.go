@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/domain"
-	"42tokyo-road-to-dena-server/usecase"
 	"errors"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/domain"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 	"net/http"
 	"time"
 

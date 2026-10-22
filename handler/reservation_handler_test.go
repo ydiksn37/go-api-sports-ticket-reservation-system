@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/domain"
-	handlermock "42tokyo-road-to-dena-server/handler/mock"
-	"42tokyo-road-to-dena-server/usecase"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/domain"
+	handlermock "github.com/ydiksn37/go-api-sports-ticket-reservation-system/handler/mock"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 	"net/http"
 	"net/http/httptest"
 	"testing"

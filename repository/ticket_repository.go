@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"42tokyo-road-to-dena-server/domain"
 	"context"
 	"fmt"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/domain"
 	"time"
 
 	"github.com/google/uuid"

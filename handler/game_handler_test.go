@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/domain"
-	handlermock "42tokyo-road-to-dena-server/handler/mock"
-	"42tokyo-road-to-dena-server/usecase"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/domain"
+	handlermock "github.com/ydiksn37/go-api-sports-ticket-reservation-system/handler/mock"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,7 +39,7 @@ func TestListGames_Handler_Success(t *testing.T) {
 					{
 						ID:       gameID,
 						GameDate: time.Now(),
-						HomeTeam: domain.Team{ID: uuid.New(), Name: "横浜DeNAベイスターズ"},
+						HomeTeam: domain.Team{ID: uuid.New(), Name: "広島東洋カープ"},
 						AwayTeam: domain.Team{ID: uuid.New(), Name: "読売ジャイアンツ"},
 					},
 					{
@@ -123,7 +123,7 @@ func TestGetGame_Handler_Success(t *testing.T) {
 				Game: &domain.Game{
 					ID:       gameID,
 					GameDate: time.Now(),
-					HomeTeam: domain.Team{ID: uuid.New(), Name: "横浜DeNAベイスターズ"},
+					HomeTeam: domain.Team{ID: uuid.New(), Name: "広島東洋カープ"},
 					AwayTeam: domain.Team{ID: uuid.New(), Name: "読売ジャイアンツ"},
 				},
 			}, nil

@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: 42Tokyo Road to DeNA API
-  version: 0.1.0
+  title: Sports Ticket Reservation API
+  version: 1.0.0
   description: |
-    このAPIは学習用途のチケット予約システムを題材にしています。
+    スポーツイベントの試合・座席・予約を管理するREST APIです。
     認証はCookieのJWT/Refresh Token、もしくはAuthorizationヘッダのBearerをサポートします。
 servers:
   - url: http://localhost:8080
@@ -61,42 +61,6 @@ paths:
           description: 競合（ユーザー名またはメールアドレスが既に存在する）
         '500':
           description: サーバー内部エラー
-  /api/user/login:
-    post:
-      tags:
-        - Auth
-      summary: ログイン（トークン発行）
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthLoginRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthTokensResponse'
-  /api/user/refresh:
-    post:
-      tags:
-        - Auth
-      summary: リフレッシュトークンの回転
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthTokensResponse'
   /api/user/me:
     get:
       tags:
@@ -347,21 +311,6 @@ components:
         password:
           type: string
           format: password
-    AuthLoginRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-    RefreshRequest:
-      type: object
-      properties:
-        refresh_token:
-          type: string
     AuthTokensResponse:
       type: object
       properties:

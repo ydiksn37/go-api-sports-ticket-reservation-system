@@ -1,8 +1,8 @@
 package handlermock
 
 import (
-	"42tokyo-road-to-dena-server/usecase"
 	"context"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
 )
 
 // usecase.UserUseCase の仮実装

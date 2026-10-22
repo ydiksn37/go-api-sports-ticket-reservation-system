@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"42tokyo-road-to-dena-server/infrastructure/authbundle"
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/infrastructure/authbundle"
 	"io"
 	"log"
 	"net/http"

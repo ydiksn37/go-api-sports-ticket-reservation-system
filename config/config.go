@@ -44,12 +44,12 @@ func Load() (*Config, error) {
 			Host: getEnv("SERVER_HOST", "0.0.0.0"),
 		},
 		Database: DatabaseConfig{
-			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:55432/road_to_dena?sslmode=disable"),
+			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:55432/sports_ticket_reservation?sslmode=disable"),
 		},
 		Auth: AuthConfig{
 			JWTSecret:    getEnv("JWT_SECRET", "local-dev-secret"),
-			JWTIssuer:    getEnv("JWT_ISSUER", "road-to-dena"),
-			JWTAudience:  getEnv("JWT_AUDIENCE", "road-to-dena-client"),
+			JWTIssuer:    getEnv("JWT_ISSUER", "sports-ticket-reservation-api"),
+			JWTAudience:  getEnv("JWT_AUDIENCE", "sports-ticket-reservation-client"),
 			AccessTTL:    15 * time.Minute,
 			RefreshTTL:   7 * 24 * time.Hour,
 			CookieDomain: getEnv("COOKIE_DOMAIN", ""),

@@ -1,12 +1,12 @@
 package usecase_test
 
 import (
-	"42tokyo-road-to-dena-server/domain"
-	"42tokyo-road-to-dena-server/usecase"
-	repositorymock "42tokyo-road-to-dena-server/usecase/mock"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/domain"
+	"github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase"
+	repositorymock "github.com/ydiksn37/go-api-sports-ticket-reservation-system/usecase/mock"
 	"testing"
 	"time"
 
